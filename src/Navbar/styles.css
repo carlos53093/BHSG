@@ -1,0 +1,50 @@
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-left: 30px;
+    margin-right: 30px;
+    margin-bottom: 50px;
+}
+
+.item-btn {
+    margin-top: 10px !important;
+    color: white !important;
+    justify-content: center !important;
+}
+
+.btn-purple {
+    background-color: #841bf1 !important;
+}
+
+.btn-purple:hover {
+    background-color: #6815be !important;
+}
+
+.btn-pink {
+    background-color: #c82bcd !important;
+}
+
+.btn-pink:hover {
+    background-color: #96209a !important;
+}
+
+.btn-yellow {
+    background-color: #d0dc27 !important;
+    color: black !important;
+}
+
+.btn-yellow:hover {
+    background-color: #9fa91d !important;
+    color: black !important;
+}
+
+.btn-black {
+    background-color: #262626 !important;
+}
+
+.btn-black:hover {
+    background-color: black !important;
+}
+

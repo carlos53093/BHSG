@@ -1,0 +1,85 @@
+@import "~slick-carousel/slick/slick.css";
+@import "~slick-carousel/slick/slick-theme.css";
+
+.App {  
+  width: 80%;
+  margin-top: 25%;
+  height: 600px;
+}
+
+.slide img {
+  width: 20rem;
+  margin: 0 auto;
+  box-shadow: 0 0 1em hsl(195 100% 50% / 1);
+}
+
+.slide {
+  transform: scale(0.8);
+  transition: transform 300ms;
+  opacity: 0.5;
+}
+
+.activeSlide {
+  transform: scale(0.95);
+  opacity: 1;
+}
+
+.arrow {
+  background-color: black;
+  position: absolute;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.arrow svg {
+  transition: color 300ms;
+}
+
+.arrow svg:hover {
+  color: #FFE81F;
+}
+
+.next {
+  right: 0%;
+  top: 50%;
+}
+
+.prev {
+  left: 0%;
+  top: 50%;
+}
+
+
+@media only screen and (max-width: 1150px){
+  .App {width: 90%; margin-right: 5%;} 
+  .slide {transform: scale(0.7);}
+  .activeSlide {transform: scale(0.8); margin-left: -30px;}
+}
+
+@media only screen and (max-width: 1024px){
+  .slide {transform: scale(0.6);}
+  .activeSlide {transform: scale(0.8); margin-left: -30px;}
+}
+
+@media only screen and (max-width: 780px){
+    .activeSlide {margin-left: -2%;}
+    .App {width: 100%; margin-right: 5%;} 
+    .arrow {display: none;}
+}
+
+@media only screen and (max-width: 680px){
+  .slide {transform: scale(0.44);}
+  .activeSlide {transform: scale(0.66); margin-left: -8%;}
+}
+
+@media only screen and (max-width: 580px){
+    .slide {transform: scale(0.3);}
+    .activeSlide {transform: scale(0.44);}
+    .App {margin-right: 15%; margin-top: 50%;}
+  }
+
+@media only screen and (max-width: 480px){
+    .slide {transform: scale(0.22); }
+    .activeSlide {transform: scale(0.33);}
+    .App {margin-right: 10%; margin-top: 50%;}
+  }
