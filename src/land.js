@@ -20,7 +20,7 @@ const Land = () => {
         <>
         <div style={{backgroundColor:'black'}}>
 
-            {/* <Hero/>
+            <Hero/>
             <Info {...homeObjOne}/>
             <Tabs />
             <Carousel />
@@ -29,7 +29,7 @@ const Land = () => {
             <Cards />
             <Faq/>
             <Lore {...homeObjTwo}/>
-            <Footer/> */}
+            <Footer/>
         </div>
         </>
     );

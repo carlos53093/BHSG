@@ -80,12 +80,13 @@ const Navbar = ({toggle}) => {
                         <a href="https://bountyhunterspaceguild.medium.com/" className="medium social"> 
                         <FontAwesomeIcon icon={faMedium} size="1x" />
                         </a>
-                        <Button variant="contained" style={{textTransform: 'none', marginLeft: 60, backgroundColor: 'orange'}} onClick={goto("connectwallet")}>
+                        
+                        <button className="headerBtn firstBtn" onClick={goto("connectwallet")}>
                             <b>My Residences</b>
-                        </Button>
-                        <Button variant="contained" style={{textTransform: 'none', marginLeft: 30, backgroundColor: '#8c1aff'}} onClick={()=>setOpenDialog(true)}>
+                        </button>
+                        <button className="headerBtn secondBtn" onClick={()=>setOpenDialog(true)}>
                             <b>Buy a Residences</b>
-                        </Button>
+                        </button>
                     </NavMenu>
                 </NavbarContainer>
             </Nav>

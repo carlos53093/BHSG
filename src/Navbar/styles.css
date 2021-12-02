@@ -48,3 +48,57 @@
     background-color: black !important;
 }
 
+:root {
+    --first_border: yellow;
+    --first_background: rgba(255, 255, 0, 0.2);
+    --first_text: white;
+    --second_border: rgb(38, 184, 233);
+    --second_background: rgba(38, 184, 233, 0.1);
+    --second_text: white;
+  }
+  .headerBtn {
+    margin-left: 20px;
+    position: relative;
+    background: white;
+    padding: 10px 24px;
+    border: 2px solid var(--first_border);
+    border-radius: 10px;
+    white-space: nowrap;
+    transition: 700ms;
+    cursor: pointer;
+  }
+  .headerBtn.firstBtn {
+    background: var(--first_background);
+    border-color: var(--first_border);
+    color: var(--first_text);
+    box-shadow: 0 0 10px -2px var(--first_border), 0 0 5px -1px var(--first_border) inset;
+  }
+  .headerBtn.secondBtn {
+    background: var(--second_background);
+    border-color: var(--second_border);
+    color: var(--second_text);
+    box-shadow: 0 0 10px -2px var(--second_border), 0 0 5px -1px var(--second_border) inset;
+  }
+  .headerBtn.firstBtn:hover {
+    box-shadow: 0 0 10px 3px var(--first_border), 0 0 5px 1px var(--first_border) inset;
+  }
+  .headerBtn.secondBtn:hover {
+    box-shadow: 0 0 10px 3px var(--second_border), 0 0 5px 1px var(--second_border) inset;
+  }
+  .headerBtn.firstBtn::before {
+      background: var(--first_border);
+  }
+    .headerBtn.secondBtn::before {
+        background: var(--second_border);
+    }
+  .headerBtn::before {
+    content: "";
+    position: absolute;
+    top: 0%;
+    left: 10px;
+    width: 70%;
+    height: 15%;
+    transform: translateY(-100%);
+    clip-path: polygon(21% 100%, 17% 100%, 27% 0, 10% 0, 0 100%, 100% 100%, 92% 0, 47% 0, 37% 100%, 33% 100%, 43% 0, 31% 0);
+  }
+
