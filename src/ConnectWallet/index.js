@@ -3,8 +3,6 @@ import {
   WalletMultiButton,
 } from '@solana/wallet-adapter-material-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Keypair, PublicKey } from '@solana/web3.js'
-import { web3 } from '@project-serum/anchor'
 import { useEffect, useState } from 'react'
 import _ from 'lodash'
 import {
@@ -12,9 +10,7 @@ import {
   CardHeader,
   CardMedia,
   CardContent,
-  Grid,
   Typography,
-  Box
 } from '@material-ui/core'
 import useConnectWallet from './LoadingMetaData'
 
@@ -24,27 +20,6 @@ import mintList3 from "../MINT_LIST_3.json";
 // import Carousel from "react-multi-carousel";
 
 import Carousel from '../Carousel2/Carousel'
-
-
-const responsive = {
-  superLargeDesktop: {
-    // the naming can be any, depends on you.
-    breakpoint: { max: 4000, min: 3000 },
-    items: 7
-  },
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 5
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 464 },
-    items: 2
-  },
-  mobile: {
-    breakpoint: { max: 464, min: 0 },
-    items: 1
-  }
-};
 
 const ConnectWallet = () => {
   const { publicKey } = useWallet()
@@ -60,8 +35,6 @@ const ConnectWallet = () => {
   }, [publicKey])
   useEffect(()=> {
     if (!_.find(metaplexList, { Pubkey: _.get(metaData, 'data.Pubkey', '') }) && metaData) {
-      console.log("-------------")
-      console.log(metaData)
       if(mintList1.indexOf(metaData.data.Mint) !== -1) {
         const newMetaList = _.cloneDeep(metaplexList1);
         newMetaList.push(metaData.data)
@@ -86,8 +59,6 @@ const ConnectWallet = () => {
   },[metaData])
 
   const renderMetaDataContainer = (data, title) => {
-    console.log('------length-----------',data.length)
-    console.log(data)
     if(data.length === 0) return null;
     return (<Carousel 
               show={5}
