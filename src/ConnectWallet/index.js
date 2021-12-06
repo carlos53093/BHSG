@@ -1,14 +1,11 @@
 import './Styles.css'
 import {
-  WalletDisconnectButton,
   WalletMultiButton,
 } from '@solana/wallet-adapter-material-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { Program, Provider, web3 } from '@project-serum/anchor'
-import { programs } from '@metaplex/js'
+import { web3 } from '@project-serum/anchor'
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import _ from 'lodash'
 import {
   Card,
@@ -17,27 +14,47 @@ import {
   CardContent,
   Grid,
   Typography,
+  Box
 } from '@material-ui/core'
 import useConnectWallet from './LoadingMetaData'
 
-const programId = new PublicKey('E7XQrWFnmS2RonnqXscWR9VtcdKygwvSZnGs8CmT9uFf')
+import mintList1 from "../MINT_LIST_1.json";
+import mintList2 from "../MINT_LIST_2.json";
+import mintList3 from "../MINT_LIST_3.json";
+// import Carousel from "react-multi-carousel";
 
-const addressId = new PublicKey('6ksPqG9FNsAPKK9uw7U4xw7R6pbkgRYCTiuUNWHRcVdh')
-const keyPair = Keypair.fromSeed(programId.toBytes())
+import Carousel from '../Carousel2/Carousel'
 
-const connection = new web3.Connection(
-  web3.clusterApiUrl('mainnet-beta'),
-  'confirmed',
-)
 
-const GetTokenUrl = 'https://public-api.solscan.io/account/tokens'
-const GetMetaDataUrl = 'https://api.all.art/v1/solana/'
+const responsive = {
+  superLargeDesktop: {
+    // the naming can be any, depends on you.
+    breakpoint: { max: 4000, min: 3000 },
+    items: 7
+  },
+  desktop: {
+    breakpoint: { max: 3000, min: 1024 },
+    items: 5
+  },
+  tablet: {
+    breakpoint: { max: 1024, min: 464 },
+    items: 2
+  },
+  mobile: {
+    breakpoint: { max: 464, min: 0 },
+    items: 1
+  }
+};
 
 const ConnectWallet = () => {
   const { publicKey } = useWallet()
-  // const [accountCnt, setAccountCnt] = useState(0);
   const [metaplexList, setMetaplexList] = useState([])
+  const [metaplexList1, setMetaplexList1] = useState([])
+  const [metaplexList2, setMetaplexList2] = useState([])
+  const [metaplexList3, setMetaplexList3] = useState([])
+  const [metaplexListOther, setMetaplexListOther] = useState([])
   const { metaData, loadMetaData } = useConnectWallet()
+
   useEffect(() => {
     if (publicKey) loadMetaData(publicKey.toBase58())
   }, [publicKey])
@@ -45,46 +62,51 @@ const ConnectWallet = () => {
     if (!_.find(metaplexList, { Pubkey: _.get(metaData, 'data.Pubkey', '') }) && metaData) {
       console.log("-------------")
       console.log(metaData)
+      if(mintList1.indexOf(metaData.data.Mint) !== -1) {
+        const newMetaList = _.cloneDeep(metaplexList1);
+        newMetaList.push(metaData.data)
+        setMetaplexList1(newMetaList)
+      } else if (mintList2.indexOf(metaData.data.Mint) !== -1) {
+        const newMetaList = _.cloneDeep(metaplexList2);
+        newMetaList.push(metaData.data)
+        setMetaplexList2(newMetaList)
+      } else if (mintList3.indexOf(metaData.data.Mint) !== -1) {
+        const newMetaList = _.cloneDeep(metaplexList3);
+        newMetaList.push(metaData.data)
+        setMetaplexList3(newMetaList)
+      } else {
+        const newMetaList = _.cloneDeep(metaplexListOther);
+        newMetaList.push(metaData.data)
+        setMetaplexListOther(newMetaList)
+      }
       const newMetaList = _.cloneDeep(metaplexList);
       newMetaList.push(metaData.data)
       setMetaplexList(newMetaList)
     }
   },[metaData])
-  // const loadMetaData = async (publicKey) => {
-  //   try {
-  //     const info = await axios.get(GetTokenUrl, {
-  //       params: { account: publicKey },
-  //     })
-  //     // setAccountCnt(info.data.length)
-  //     console.log(info.data)
-  //     let metaList = metaplexList
-  //     _.map(info.data, async (each) => {
-  //       const metadata = await axios.get(GetMetaDataUrl + each.tokenAddress)
-  //       console.log(metadata)
-  //       if (!_.find(metaList, { Pubkey: _.get(metadata, 'data.Pubkey', '') })) {
-  //         metaList.push(metadata.data)
-  //         console.log('loading')
-  //         console.log(metaList)
-  //         setMetaplexList(metaList)
-  //       }
-  //     })
-  //   } catch (err) {}
-  // }
 
-  const renderMetaDataContainer = () => {
-    console.log('------length-----------',metaplexList.length)
-    console.log(metaplexList)
-    return _.map(metaplexList, (each, index) => {
+  const renderMetaDataContainer = (data, title) => {
+    console.log('------length-----------',data.length)
+    console.log(data)
+    if(data.length === 0) return null;
+    return (<Carousel 
+              show={5}
+              style={{paddingLeft: 100, paddingRight: 100, paddingTop: 100}}
+              title={title}
+      >
+      {
+        _.map(data, (each, index) => {
       return (
-        <Grid item xs={2} sm={4} md={4} key={index} style={{marginBottom: 50}}>
-          <Card style={{ width: 350, height: 550, boxShadow:'#26b8e9 0px 0 10px 0px', borderRadius: 10 }}>
+        <div key={index} style={{margin: '10px 20px'}}>
+          <Card style={{ font: '10px important', width: 250, height: 450, boxShadow:'#26b8e9 0px 0 10px 0px', borderRadius: 10 }}>
             <CardHeader
               title={_.get(each, 'Title', '')}
+              titleTypographyProps={"h1"}
               subheader={`Symbol: ${_.get(each, 'Properties.symbol', 'Unknow',)}`}
             />
             <CardMedia
               component="img"
-              height="350"
+              height="250"
               image={_.get(each, 'Preview_URL', '')}
               alt={
                 _.get(each, 'Preview_URL', '') !== ''
@@ -92,15 +114,17 @@ const ConnectWallet = () => {
                   : 'Unknown Image'
               }
             />
-            <CardContent>
-              <Typography variant="body2">
+            <CardContent style={{overFlow: 'auto'}}>
+              <Typography variant="subtitle2">
                 {_.get(each, 'Description', '')}
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </div>
       )
-    })
+    })}
+    </Carousel>
+    )
   }
 
   return (
@@ -109,14 +133,11 @@ const ConnectWallet = () => {
       <br />
       <h4>A place for you to view every place you own</h4>
       <WalletMultiButton style={{ marginTop: 70 }} />
-      <Grid
-        style={{ marginTop: 100 }}
-        container
-        columns={{ xs: 4, sm: 8, md: 12 }}
-        justifyContent="center"
-      >
-        {renderMetaDataContainer()}
-      </Grid>
+
+        {renderMetaDataContainer(metaplexList1, "Group1")}
+        {renderMetaDataContainer(metaplexList2, "Group2")}
+        {renderMetaDataContainer(metaplexList3, "Group3")}
+        {renderMetaDataContainer(metaplexListOther, "Other")}
     </div>
   )
 }
