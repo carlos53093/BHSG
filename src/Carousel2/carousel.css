@@ -1,7 +1,12 @@
 .carousel-container {
-    width: 100%;
+    width: 80%;
     display: flex;
     flex-direction: column;
+    border: 1px yellow solid;
+    border-radius: 10px;
+    margin: 40px 0px;
+    padding: 10px 50px;
+    position: relative;
 }
 
 .carousel-wrapper {
@@ -21,6 +26,7 @@
     transition: all 250ms linear;
     -ms-overflow-style: none;  /* hide scrollbar in IE and Edge */
     scrollbar-width: none;  /* hide scrollbar in Firefox */
+    width: fit-content;
 }
 
 /* hide scrollbar in webkit browser */
@@ -29,7 +35,7 @@
 }
 
 .carousel-content > * {
-    width: 100%;
+    /* width: 100%; */
     flex-shrink: 0;
     flex-grow: 1;
 }

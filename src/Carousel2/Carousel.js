@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import './carousel.css'
+import {
+    Paper,
+  } from '@material-ui/core'
+import { styled } from '@material-ui/styles';
+
+const Item = styled(Paper)(({ theme }) => ({
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+    lineHeight: '24px',
+    position: 'absolute',
+    padding: '2px 15px',
+    top: '-15px',
+    left: '-10px'
+  }));
 
 const Carousel = (props) => {
     const {children, show} = props
@@ -53,8 +67,8 @@ const Carousel = (props) => {
     }
 
     return (
-        <div className="carousel-container" style={props.style}>
-            <p>{props.title}</p>
+        <div className="carousel-container">
+            <Item>{props.title}</Item>
             <div className="carousel-wrapper">
                 {/* You can alwas change the content of the button to other things */}
                 {
@@ -71,13 +85,13 @@ const Carousel = (props) => {
                     <div
                         className={`carousel-content show-${show}`}
                         style={{ transform: `translateX(-${currentIndex * (100 / show)}%)` }}
-                    >
+                    >   
                         {children}
                     </div>
                 </div>
                 {/* You can alwas change the content of the button to other things */}
                 {
-                    currentIndex < (length - show) &&
+                    currentIndex < (length - show - 1) &&
                     <button onClick={next} className="right-arrow">
                         &gt;
                     </button>

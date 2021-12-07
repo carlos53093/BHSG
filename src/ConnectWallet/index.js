@@ -62,7 +62,7 @@ const ConnectWallet = () => {
     if(data.length === 0) return null;
     return (<Carousel 
               show={5}
-              style={{paddingLeft: 100, paddingRight: 100, paddingTop: 100}}
+              
               title={title}
       >
       {
@@ -72,7 +72,6 @@ const ConnectWallet = () => {
           <Card style={{ font: '10px important', width: 250, height: 450, boxShadow:'#26b8e9 0px 0 10px 0px', borderRadius: 10 }}>
             <CardHeader
               title={_.get(each, 'Title', '')}
-              titleTypographyProps={"h1"}
               subheader={`Symbol: ${_.get(each, 'Properties.symbol', 'Unknow',)}`}
             />
             <CardMedia
@@ -85,8 +84,8 @@ const ConnectWallet = () => {
                   : 'Unknown Image'
               }
             />
-            <CardContent style={{overFlow: 'auto'}}>
-              <Typography variant="subtitle2">
+            <CardContent>
+              <Typography variant="subtitle2" style={{textOverflow: 'ellipsis', paddingBottom: 10}}>
                 {_.get(each, 'Description', '')}
               </Typography>
             </CardContent>
