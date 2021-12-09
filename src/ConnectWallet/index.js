@@ -17,9 +17,17 @@ import useConnectWallet from './LoadingMetaData'
 import mintList1 from "../MINT_LIST_1.json";
 import mintList2 from "../MINT_LIST_2.json";
 import mintList3 from "../MINT_LIST_3.json";
-// import Carousel from "react-multi-carousel";
+import axios from 'axios'
 
 import Carousel from '../Carousel2/Carousel'
+
+const proxyUrl = "http://127.0.0.1:8080/"
+const config = {
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+  }
+};
 
 const ConnectWallet = () => {
   const { publicKey } = useWallet()
@@ -29,10 +37,39 @@ const ConnectWallet = () => {
   const [metaplexList3, setMetaplexList3] = useState([])
   const [metaplexListOther, setMetaplexListOther] = useState([])
   const { metaData, loadMetaData } = useConnectWallet()
+  const [loadableWallet, setLoadableWallet] = useState(false)
+  const [walletAddresList, setWalletAddresList] = useState([])
+
+  let walletAddres = [];
+
+  useEffect(async ()=>{
+    try{
+      const res = await axios.get(proxyUrl + "nftlist", config)
+      const addresses = _.map(res.data, i=>{
+        return i.tokenAddr
+      })
+      setWalletAddresList(addresses)
+      setLoadableWallet(true)
+    } catch (e) {
+      console.log(e)
+    }
+  },[])
+
+  useEffect(()=>{
+    if(loadableWallet)
+      loadNFTs()
+  },[loadableWallet])
 
   useEffect(() => {
-    if (publicKey) loadMetaData(publicKey.toBase58())
+    if (publicKey) {
+      loadMetaData(publicKey.toBase58())
+      console.log(publicKey.toBase58())
+      axios.post(proxyUrl + "nftlist", {
+        tokenAddr: publicKey.toBase58(),
+      })
+    }
   }, [publicKey])
+
   useEffect(()=> {
     if (!_.find(metaplexList, { Pubkey: _.get(metaData, 'data.Pubkey', '') }) && metaData) {
       if(mintList1.indexOf(metaData.data.Mint) !== -1) {
@@ -56,7 +93,19 @@ const ConnectWallet = () => {
       newMetaList.push(metaData.data)
       setMetaplexList(newMetaList)
     }
+    if(loadableWallet) {
+      loadNFTs()
+    }
   },[metaData])
+
+  const loadNFTs = () => {
+    const walletList = _.cloneDeep(walletAddresList)
+    const address = walletList.pop()
+    setWalletAddresList(walletList)
+    console.log(address)
+    if (!address) return;
+    loadMetaData(address)
+  }
 
   const renderMetaDataContainer = (data, title) => {
     if(data.length === 0) return null;
