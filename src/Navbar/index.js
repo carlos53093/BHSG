@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import { useHistory } from 'react-router'
 import {FaBars} from 'react-icons/fa'
-import {Nav, NavbarContainer, NavLogo, MobileIcon, NavMenu, NavItem, NavLinks,SidebarA, Image} from './NavbarElements'
+import {Nav, NavbarContainer, NavLogo, MobileIcon, NavMenu, NavItem, NavLinks, Image} from './NavbarElements'
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faTwitter, faDiscord, faMedium} from "@fortawesome/free-brands-svg-icons"
 import '../Sidebar/icons.css'
@@ -71,10 +71,6 @@ const Navbar = ({toggle}) => {
                         <NavItem>
                             <NavLinks to="faq" smooth={true} duration={500} spy={true} exact='true' offset={-80}>FAQ</NavLinks>
                         </NavItem>
-                        <NavItem>
-                            <SidebarA to="/connectwallet:all">Residences</SidebarA>
-                        </NavItem>
-                    {/*  */}
 
                         <a href="https://twitter.com/BountyHunterNFT" className="twitter social"> 
                         <FontAwesomeIcon icon={faTwitter} size="1x" />
@@ -86,7 +82,7 @@ const Navbar = ({toggle}) => {
                         <FontAwesomeIcon icon={faMedium} size="1x" />
                         </a>
                         
-                        <button className="headerBtn firstBtn" onClick={goto("connectwallet")}>
+                        <button className="headerBtn firstBtn" onClick={goto("/connectwallet")}>
                             <b>My Residences</b>
                         </button>
                         <button className="headerBtn secondBtn" onClick={()=>setOpenDialog(true)}>

@@ -22,6 +22,7 @@ import axios from 'axios'
 import Carousel from '../Carousel2/Carousel'
 
 import dotenv from 'dotenv'
+import { useHistory } from 'react-router-dom'
 
 const config = {
   headers: {
@@ -34,7 +35,8 @@ dotenv.config({ path: '.env' })
 
 const ConnectWallet = (props) => {
 
-  const {renderAll} = props;
+  const {renderAll, match: {params}} = props;
+  const {url} = params;
 
   const { publicKey } = useWallet()
   const [metaplexList, setMetaplexList] = useState([])
@@ -45,36 +47,37 @@ const ConnectWallet = (props) => {
   const { metaData, loadMetaData } = useConnectWallet()
   const [loadableWallet, setLoadableWallet] = useState(false)
   const [walletAddresList, setWalletAddresList] = useState([])
-
-  let walletAddres = [];
+  let history = useHistory()
 
   useEffect(async ()=>{
     console.log(renderAll)
     if(!renderAll) return;
     try{
-      const res = await axios.get(process.env.REACT_APP_PROXY_URL + "nftlist", config)
-      const addresses = _.map(res.data, i=>{
-        return i.walletAddr
-      })
-      setWalletAddresList(addresses)
-      setLoadableWallet(true)
+      const res = await axios.get(process.env.REACT_APP_PROXY_URL + "nftlist/" + url, config)
+      // const addresses = _.map(res.data, i=>{
+      //   return i.walletAddr
+      // })
+      loadMetaData(res.data.walletAddr)
+      // setWalletAddresList(res.data.addresses)
+      // setLoadableWallet(true)
     } catch (e) {
       console.log(e)
     }
-  },[])
+  },[url])
 
   useEffect(()=>{
     if(loadableWallet)
       loadNFTs()
   },[loadableWallet])
 
-  useEffect(() => {
+  useEffect(async() => {
     if (publicKey) {
-      loadMetaData(publicKey.toBase58())
       console.log(publicKey.toBase58())
-      axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
+      const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
         walletAddr: publicKey.toBase58(),
       })
+      goto("/connectwallet/" + res.data.url)
+      // loadMetaData(publicKey.toBase58())
     }
   }, [publicKey])
 
@@ -113,6 +116,10 @@ const ConnectWallet = (props) => {
     console.log(address)
     if (!address) return;
     loadMetaData(address)
+  }
+
+  const goto = (url) => {
+    history.push(url);
   }
 
   const renderMetaDataContainer = (data, title) => {
@@ -156,10 +163,10 @@ const ConnectWallet = (props) => {
 
   return (
     <div className="wallet-container">
-      <h1>{!renderAll ? 'My Residences' : 'All Residences'}</h1>
+      <h1>'My Residences'</h1>
       <br />
       <h4>A place for you to view every place you own</h4>
-      {!renderAll && <WalletMultiButton style={{ marginTop: 70 }} />}
+        <WalletMultiButton style={{ marginTop: 70 }} />
 
         {renderMetaDataContainer(metaplexList1, "Group1")}
         {renderMetaDataContainer(metaplexList2, "Group2")}

@@ -98,21 +98,3 @@ export const Image = styled.img`
     @media screen and (max-width: 768px) {
         max-width:8%;
 `
-
-export const SidebarA = styled(Link)`
-color: #fff;
-display: flex;
-align-items: center;
-text-decoration: none;
-padding: 0 3rem;
-height: 100%;
-cursor: pointer;
-font-size: 12px;
-font-family: 'Saira', sans-serif;
-font-weight: 600;
-text-transform: uppercase;
-
-&.active {
-    border-bottom: 3px solid #FFE81F;
-}
-`
