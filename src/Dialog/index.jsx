@@ -11,10 +11,6 @@ const PopupDialog = (props) => {
     }
   },[props.open])
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
     setOpen(false);
     props.onClose && props.onClose();

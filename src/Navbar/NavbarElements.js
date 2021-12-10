@@ -1,8 +1,7 @@
 import styled from "styled-components";
 import {Link as LinkR} from 'react-router-dom'
 import {Link as LinkS} from 'react-scroll'
-import {Button} from "@material-ui/core"
-import { styled as muiStyled } from '@material-ui/styles';
+import { Link } from 'react-router-dom'
 
 export const Nav = styled.nav`
     background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};
@@ -100,3 +99,20 @@ export const Image = styled.img`
         max-width:8%;
 `
 
+export const SidebarA = styled(Link)`
+color: #fff;
+display: flex;
+align-items: center;
+text-decoration: none;
+padding: 0 3rem;
+height: 100%;
+cursor: pointer;
+font-size: 12px;
+font-family: 'Saira', sans-serif;
+font-weight: 600;
+text-transform: uppercase;
+
+&.active {
+    border-bottom: 3px solid #FFE81F;
+}
+`

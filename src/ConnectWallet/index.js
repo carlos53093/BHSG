@@ -21,7 +21,8 @@ import axios from 'axios'
 
 import Carousel from '../Carousel2/Carousel'
 
-const proxyUrl = "http://127.0.0.1:8080/"
+import dotenv from 'dotenv'
+
 const config = {
   headers: {
     "Access-Control-Allow-Origin": "*",
@@ -29,7 +30,12 @@ const config = {
   }
 };
 
-const ConnectWallet = () => {
+dotenv.config({ path: '.env' })
+
+const ConnectWallet = (props) => {
+
+  const {renderAll} = props;
+
   const { publicKey } = useWallet()
   const [metaplexList, setMetaplexList] = useState([])
   const [metaplexList1, setMetaplexList1] = useState([])
@@ -43,10 +49,12 @@ const ConnectWallet = () => {
   let walletAddres = [];
 
   useEffect(async ()=>{
+    console.log(renderAll)
+    if(!renderAll) return;
     try{
-      const res = await axios.get(proxyUrl + "nftlist", config)
+      const res = await axios.get(process.env.REACT_APP_PROXY_URL + "nftlist", config)
       const addresses = _.map(res.data, i=>{
-        return i.tokenAddr
+        return i.walletAddr
       })
       setWalletAddresList(addresses)
       setLoadableWallet(true)
@@ -64,8 +72,8 @@ const ConnectWallet = () => {
     if (publicKey) {
       loadMetaData(publicKey.toBase58())
       console.log(publicKey.toBase58())
-      axios.post(proxyUrl + "nftlist", {
-        tokenAddr: publicKey.toBase58(),
+      axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
+        walletAddr: publicKey.toBase58(),
       })
     }
   }, [publicKey])
@@ -148,10 +156,10 @@ const ConnectWallet = () => {
 
   return (
     <div className="wallet-container">
-      <h1>My Residences</h1>
+      <h1>{!renderAll ? 'My Residences' : 'All Residences'}</h1>
       <br />
       <h4>A place for you to view every place you own</h4>
-      <WalletMultiButton style={{ marginTop: 70 }} />
+      {!renderAll && <WalletMultiButton style={{ marginTop: 70 }} />}
 
         {renderMetaDataContainer(metaplexList1, "Group1")}
         {renderMetaDataContainer(metaplexList2, "Group2")}
