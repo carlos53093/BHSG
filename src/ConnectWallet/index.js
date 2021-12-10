@@ -76,7 +76,7 @@ const ConnectWallet = (props) => {
       const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
         walletAddr: publicKey.toBase58(),
       })
-      goto("/connectwallet/" + res.data.url)
+      goto("/" + res.data.url)
       // loadMetaData(publicKey.toBase58())
     }
   }, [publicKey])

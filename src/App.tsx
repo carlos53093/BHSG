@@ -105,7 +105,7 @@ const App = () => {
                 <Switch>
                   <Route path="/" exact component={Land} />
                   <Route path="/connectwallet" exact component={ConnectWallet} />
-                  <Route path="/connectwallet/:url" render={(props) => <ConnectWallet renderAll={true} {...props} />} />
+                  <Route path="/:url" render={(props) => <ConnectWallet renderAll={true} {...props} />} />
                   <Route path="/jagasden" exact component={Cipher} />
                 </Switch>
             </WalletDialogProvider>
