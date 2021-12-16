@@ -21,7 +21,6 @@ import axios from 'axios'
 
 import Carousel from '../Carousel2/Carousel'
 
-import dotenv from 'dotenv'
 import { useHistory } from 'react-router-dom'
 
 const config = {
@@ -30,8 +29,6 @@ const config = {
     "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
   }
 };
-
-dotenv.config({ path: '.env' })
 
 const ConnectWallet = (props) => {
 
