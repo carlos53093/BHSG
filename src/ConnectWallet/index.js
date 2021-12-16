@@ -72,8 +72,12 @@ const ConnectWallet = (props) => {
   }, [publicKey])
 
   useEffect(async() => {
+    if(renderAll) return;
+    console.log("------tokenInfo useEffect --------------",tokenInfo)
     for(let i = 0; i < tokenInfo.length; i++) {
+      console.log("------------token array id-----", i, tokenInfo[i].tokenAddress)
       if( mintList1.indexOf(tokenInfo[i].tokenAddress) !== -1) {
+        console.log("-------- belong to the mintList1----------", mintList1.indexOf(tokenInfo[i].tokenAddress))
         const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
           walletAddr: publicKey.toBase58(),
         })
@@ -168,7 +172,7 @@ const ConnectWallet = (props) => {
       <h1>'My Residences'</h1>
       <br />
       <h4>A place for you to view every place you own</h4>
-        <WalletMultiButton style={{ marginTop: 70 }} />
+        {!renderAll&&<WalletMultiButton style={{ marginTop: 70 }} />}
 
         {renderMetaDataContainer(metaplexList1, "Group1")}
         {renderMetaDataContainer(metaplexList2, "Group2")}
