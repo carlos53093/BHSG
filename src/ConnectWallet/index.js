@@ -44,7 +44,7 @@ const ConnectWallet = (props) => {
   const [metaplexList2, setMetaplexList2] = useState([])
   const [metaplexList3, setMetaplexList3] = useState([])
   const [metaplexListOther, setMetaplexListOther] = useState([])
-  const { metaData, loadMetaData } = useConnectWallet()
+  const { metaData, loadMetaData , tokenInfo} = useConnectWallet()
   const [loadableWallet, setLoadableWallet] = useState(false)
   const [walletAddresList, setWalletAddresList] = useState([])
   let history = useHistory()
@@ -54,12 +54,7 @@ const ConnectWallet = (props) => {
     if(!renderAll) return;
     try{
       const res = await axios.get(process.env.REACT_APP_PROXY_URL + "nftlist/" + url, config)
-      // const addresses = _.map(res.data, i=>{
-      //   return i.walletAddr
-      // })
       loadMetaData(res.data.walletAddr)
-      // setWalletAddresList(res.data.addresses)
-      // setLoadableWallet(true)
     } catch (e) {
       console.log(e)
     }
@@ -72,14 +67,21 @@ const ConnectWallet = (props) => {
 
   useEffect(async() => {
     if (publicKey) {
-      console.log(publicKey.toBase58())
-      const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
-        walletAddr: publicKey.toBase58(),
-      })
-      goto("/" + res.data.url)
-      // loadMetaData(publicKey.toBase58())
+      loadMetaData(publicKey.toBase58())
     }
   }, [publicKey])
+
+  useEffect(async() => {
+    for(let i = 0; i < tokenInfo.length; i++) {
+      if( mintList1.indexOf(tokenInfo[i].tokenAddress) !== -1) {
+        const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
+          walletAddr: publicKey.toBase58(),
+        })
+        goto("/" + res.data.url)
+        break;
+      }
+    }
+  }, [tokenInfo])
 
   useEffect(()=> {
     if (!_.find(metaplexList, { Pubkey: _.get(metaData, 'data.Pubkey', '') }) && metaData) {

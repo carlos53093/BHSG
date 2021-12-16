@@ -7,6 +7,7 @@ const GetMetaDataUrl = 'https://api.all.art/v1/solana/'
 
 const useConnectWallet = () => {
   const [metaData, setMetaData]  = useState()
+  const [tokenInfo, setTokenInfo] = useState([])
 
   const loadMetaData = async (publicKey) => {
     try {
@@ -15,6 +16,7 @@ const useConnectWallet = () => {
       })
       // setAccountCnt(info.data.length)
       console.log(info.data)
+      setTokenInfo(info.data)
       _.map(info.data, async (each) => {
         const temp = await axios.get(GetMetaDataUrl + each.tokenAddress)
         setMetaData(temp)
@@ -26,7 +28,7 @@ const useConnectWallet = () => {
     } catch (err) {}
   }
 
-  return { metaData, loadMetaData }
+  return { metaData, loadMetaData, tokenInfo }
 }
 
 export default useConnectWallet
