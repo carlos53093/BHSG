@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import {Link as LinkR} from 'react-router-dom'
 import {Link as LinkS} from 'react-scroll'
-import { Link } from 'react-router-dom'
+import {Button} from "@material-ui/core"
+import { styled as muiStyled } from '@material-ui/styles';
 
 export const Nav = styled.nav`
     background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};
@@ -98,3 +99,4 @@ export const Image = styled.img`
     @media screen and (max-width: 768px) {
         max-width:8%;
 `
+
