@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import {Link as LinkR} from 'react-router-dom'
 import {Link as LinkS} from 'react-scroll'
-import {Button} from "@material-ui/core"
-import { styled as muiStyled } from '@material-ui/styles';
+// import {Button} from "@material-ui/core"
+// import { styled as muiStyled } from '@material-ui/styles';
 
 export const Nav = styled.nav`
     background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};

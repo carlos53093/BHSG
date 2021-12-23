@@ -6,7 +6,7 @@ const GetTokenUrl = 'https://public-api.solscan.io/account/tokens'
 const GetMetaDataUrl = 'https://api.all.art/v1/solana/'
 
 const useConnectWallet = () => {
-  const [metaData, setMetaData]  = useState()
+  const [metaData, setMetaData]  = useState(null)
   const [tokenInfo, setTokenInfo] = useState([])
 
   const loadMetaData = async (publicKey) => {
@@ -28,7 +28,23 @@ const useConnectWallet = () => {
     } catch (err) {}
   }
 
-  return { metaData, loadMetaData, tokenInfo }
+  const loadTokenAddressList = async (publicKey) => {
+    try {
+      const info = await axios.get(GetTokenUrl, {
+        params: { account: publicKey },
+      })
+      // setAccountCnt(info.data.length)
+      console.log(info.data)
+      setTokenInfo(info.data)
+    } catch (err) {}
+  }
+
+  const loadTokenInfo = async (tokenAddr) => {
+    const temp = await axios.get(GetMetaDataUrl + tokenAddr)
+    setMetaData(temp.data)
+  }
+
+  return { metaData, loadMetaData, tokenInfo, loadTokenAddressList, loadTokenInfo }
 }
 
 export default useConnectWallet

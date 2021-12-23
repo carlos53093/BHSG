@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import {Route, BrowserRouter as Router, Switch} from "react-router-dom";
 import Land from "./land";
 import Cipher from "./cipher"
-import * as anchor from "@project-serum/anchor";
+// import * as anchor from "@project-serum/anchor";
 import { clusterApiUrl } from "@solana/web3.js";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
@@ -24,27 +24,28 @@ import { createTheme, ThemeProvider } from "@material-ui/core";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import ConnectWallet from "./ConnectWallet";
+import UserAssets from "./UserAssets"
 
-const treasury = new anchor.web3.PublicKey(
-  process.env.REACT_APP_TREASURY_ADDRESS!
-);
+// const treasury = new anchor.web3.PublicKey(
+//   process.env.REACT_APP_TREASURY_ADDRESS!
+// );
 
-const config = new anchor.web3.PublicKey(
-  process.env.REACT_APP_CANDY_MACHINE_CONFIG!
-);
+// const config = new anchor.web3.PublicKey(
+//   process.env.REACT_APP_CANDY_MACHINE_CONFIG!
+// );
 
-const candyMachineId = new anchor.web3.PublicKey(
-  process.env.REACT_APP_CANDY_MACHINE_ID!
-);
+// const candyMachineId = new anchor.web3.PublicKey(
+//   process.env.REACT_APP_CANDY_MACHINE_ID!
+// );
 
 const network = process.env.REACT_APP_SOLANA_NETWORK as WalletAdapterNetwork;
 
-const rpcHost = process.env.REACT_APP_SOLANA_RPC_HOST!;
-const connection = new anchor.web3.Connection(rpcHost);
+// const rpcHost = process.env.REACT_APP_SOLANA_RPC_HOST!;
+// const connection = new anchor.web3.Connection(rpcHost);
 
-const startDateSeed = parseInt(process.env.REACT_APP_CANDY_START_DATE!, 10);
+// const startDateSeed = parseInt(process.env.REACT_APP_CANDY_START_DATE!, 10);
 
-const txTimeout = 30000; // milliseconds (confirm this works for your project)
+// const txTimeout = 30000; // milliseconds (confirm this works for your project)
 
 const theme = createTheme({
     palette: {
@@ -105,7 +106,7 @@ const App = () => {
                 <Switch>
                   <Route path="/" exact component={Land} />
                   <Route path="/connectwallet" exact component={ConnectWallet} />
-                  <Route path="/:url" render={(props) => <ConnectWallet renderAll={true} {...props} />} />
+                  <Route path="/:url" render={(props) => <UserAssets {...props} />} />
                   <Route path="/jagasden" exact component={Cipher} />
                 </Switch>
             </WalletDialogProvider>

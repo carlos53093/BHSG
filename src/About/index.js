@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {HeroContainer, HeroBg, HeroContent, HeroH1, HeroBtnWrapper, ArrowForward, ArrowRight, Image, Link} from './AboutElements'
+import {HeroContainer, HeroBg, HeroContent, HeroH1, HeroBtnWrapper, ArrowForward, ArrowRight, Image} from './AboutElements'
 import ParticleBackground from '../ParticleBackground'
 import { Button } from './ButtonElement'
 import logo from '../Logos/logo.svg';
