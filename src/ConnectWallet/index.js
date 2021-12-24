@@ -51,45 +51,53 @@ const ConnectWallet = (props) => {
         }
       }
       if(tokenAddress) {
-        const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
-          walletAddr: publicKey.toBase58(),
-          defaultTokenAddress: tokenAddress
-        })
-        console.log(res.data)
-        setDefaultTokenInfo(res.data)
-        loadTokenInfo(res.data.defaultTokenAddress)
+        loadTokenInfo(tokenAddress)
       }
     })()
   }, [tokenInfo])
+
+  useEffect(()=>{
+    (async() => {
+      if(!metaData) return
+      const mapObj = {
+        '#':'',
+        ' ':'-'
+      };
+      const url = _.replace(metaData.Title, / |#/gi, function(matched){
+        return mapObj[matched];
+      });
+      const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
+        walletAddr: publicKey.toBase58(),
+        defaultTokenAddress: metaData.Mint,
+        url: url
+      })
+      setDefaultTokenInfo(res.data)
+    })()
+    
+  }, [metaData])
 
   const goto = (url) => {
     history.push(url);
   }
 
   const renderMetaDataContainer = () => {
-    if(!metaData) return null;
+    if(!metaData || !defaultTokenInfo) return null;
     return (
         <div style={{position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%)'}}>
           <Card className="card-container" style={{ font: '10px important', borderRadius: 10 }}>
-            {/* <CardHeader
-              title={_.get(metaData, 'Title', '')}
-              subheader={`Symbol: ${_.get(metaData, 'Properties.symbol', 'Unknow',)}`}
-            /> */}
-            <Link to={`/${defaultTokenInfo.url}`}><CardMedia
+            <Link to={`/${defaultTokenInfo.url}`}>
+              <CardMedia
               component="img"
               height="250"
+              width="250"
               image={_.get(metaData, 'Preview_URL', '')}
               alt={
                 _.get(metaData, 'Preview_URL', '') !== ''
                   ? 'Loading...'
                   : 'Unknown Image'
               }
-            /></Link>
-            {/* <CardContent>
-              <Typography variant="subtitle2" style={{textOverflow: 'ellipsis', paddingBottom: 10}}>
-                {_.get(metaData, 'Description', '')}
-              </Typography>
-            </CardContent> */}
+            />
+            </Link>
           </Card>
         </div>
     )
