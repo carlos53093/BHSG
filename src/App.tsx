@@ -24,6 +24,7 @@ import { createTheme, ThemeProvider } from "@material-ui/core";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import ConnectWallet from "./ConnectWallet";
+import Questions from "./Questions"
 import UserAssets from "./UserAssets"
 
 // const treasury = new anchor.web3.PublicKey(
@@ -106,8 +107,9 @@ const App = () => {
                 <Switch>
                   <Route path="/" exact component={Land} />
                   <Route path="/connectwallet" exact component={ConnectWallet} />
-                  <Route path="/:url" render={(props) => <UserAssets {...props} />} />
+                  <Route path="/room/:url" render={(props) => <UserAssets {...props} />} />
                   <Route path="/jagasden" exact component={Cipher} />
+                  <Route path="/questions" exact component={Questions} />
                 </Switch>
             </WalletDialogProvider>
           </WalletProvider>

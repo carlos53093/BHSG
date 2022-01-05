@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import { useHistory } from 'react-router'
 import {FaBars} from 'react-icons/fa'
-import {Nav, NavbarContainer, NavLogo, MobileIcon, NavMenu, NavItem, NavLinks, Image} from './NavbarElements'
+import {Nav, NavbarContainer, NavLogo, MobileIcon, NavMenu, NavItem, NavLinks, Image, NavLinkR} from './NavbarElements'
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faTwitter, faDiscord, faMedium} from "@fortawesome/free-brands-svg-icons"
 import '../Sidebar/icons.css'
@@ -10,14 +10,13 @@ import logo from '../Logos/logo.svg';
 import {Button, Box} from "@material-ui/core"
 import PopupDialog from "../Dialog"
 import "./styles.css"
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const Navbar = ({toggle}) => {
 
     const history = useHistory();
-
     const [scrollNav, setScrollNav] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
-
     const changeNav = () => {
          if(window.scrollY >= 80) {
              setScrollNav(true)}
@@ -25,6 +24,8 @@ const Navbar = ({toggle}) => {
              setScrollNav(false)
              }
          }
+
+    const { publicKey } = useWallet()
 
     useEffect(() => {
         window.addEventListener('scroll', changeNav)
@@ -40,6 +41,13 @@ const Navbar = ({toggle}) => {
 
     const onDialogClose = () => {
         setOpenDialog(false);
+    }
+
+    const onClickQuestion = () => {
+        if(publicKey) {
+            history.push("/questions");
+        }
+        else return;
     }
 
     return (
@@ -70,6 +78,9 @@ const Navbar = ({toggle}) => {
                         </NavItem>
                         <NavItem>
                             <NavLinks to="faq" smooth={true} duration={500} spy={true} exact='true' offset={-80}>FAQ</NavLinks>
+                        </NavItem>
+                        <NavItem>
+                            <NavLinkR onClick={onClickQuestion} spy={true} exact='true' offset={-80}>Questions</NavLinkR>
                         </NavItem>
 
                         <a href="https://twitter.com/BountyHunterNFT" className="twitter social"> 

@@ -42,6 +42,7 @@ const useConnectWallet = () => {
   const loadTokenInfo = async (tokenAddr) => {
     const temp = await axios.get(GetMetaDataUrl + tokenAddr)
     setMetaData(temp.data)
+    
   }
 
   return { metaData, loadMetaData, tokenInfo, loadTokenAddressList, loadTokenInfo }

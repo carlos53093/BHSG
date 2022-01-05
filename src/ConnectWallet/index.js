@@ -17,7 +17,9 @@ import mintList1 from "../MINT_LIST_1.json";
 // import mintList2 from "../MINT_LIST_2.json";
 // import mintList3 from "../MINT_LIST_3.json";
 import axios from 'axios'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
+import { setAdmin } from '../actions/UserInfo'
 
 // const config = {
 //   headers: {
@@ -31,10 +33,11 @@ const ConnectWallet = (props) => {
   const { publicKey } = useWallet()
   const { loadTokenAddressList , tokenInfo, loadTokenInfo, metaData } = useConnectWallet()
   const [defaultTokenInfo, setDefaultTokenInfo] = useState(null)
-  let history = useHistory()
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (publicKey) {
+      dispatch(setAdmin(false));
       loadTokenAddressList(publicKey.toBase58())
     }
   }, [publicKey])
@@ -72,20 +75,18 @@ const ConnectWallet = (props) => {
         url: url
       })
       setDefaultTokenInfo(res.data)
+      console.log("-----metaData-----",res.data)
+      dispatch(setAdmin(res.data.isAdmin));
     })()
     
   }, [metaData])
-
-  const goto = (url) => {
-    history.push(url);
-  }
 
   const renderMetaDataContainer = () => {
     if(!metaData || !defaultTokenInfo) return null;
     return (
         <div style={{position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%)'}}>
           <Card className="card-container" style={{ font: '10px important', borderRadius: 10 }}>
-            <Link to={`/${defaultTokenInfo.url}`}>
+            <Link to={`room/${defaultTokenInfo.url}`}>
               <CardMedia
               component="img"
               height="250"
