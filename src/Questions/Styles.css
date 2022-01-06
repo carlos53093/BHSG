@@ -17,6 +17,8 @@
 
 .ques-btn-white {
     background-color: white !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
 }
 
 .ques-write-container{

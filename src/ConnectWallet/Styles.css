@@ -1,6 +1,6 @@
 .wallet-container {
     display: flex;
-    justify-content: flex-start;;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
     min-height: calc(100vh - 80px - 100px);

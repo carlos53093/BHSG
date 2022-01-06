@@ -14,7 +14,8 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormGroup from '@material-ui/core/FormGroup';
 import Checkbox from '@material-ui/core/Checkbox';
-import { requirePropFactory } from '@material-ui/core';
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -49,16 +50,34 @@ const Questions = (props) => {
     const classes = useStyles();
     const [isWrite, setWrite] = useState(false)
     const [questions, setQuestions] = useState([]);
-    const [quesNewVal, setQuesNewVal] = useState("");
+    const [quesNewVal, setQuesNewVal] = useState({});
+    const { publicKey } = useWallet()
+    const history = useHistory()
+    const [answers, setAnswers] = useState([]);
 
     useEffect(() => {
         setWrite(isAdmin)
+        console.log(publicKey)
+        if (!publicKey) {
+            alert('please connect your wallet');
+            history.push("/")
+        }
         const fun = async () => {
             const res = await axios.get(process.env.REACT_APP_PROXY_URL + "questions", config)
-            if(isAdmin)
+
+            const intialQuestVal = {}
+            _.each(res.data, i => {
+                const id = i._id;
+                _.set(intialQuestVal, id, "");
+            })
+            if (isAdmin) {
+                _.set(intialQuestVal, undefined, "");
                 setQuestions([...res.data, emptyQuestionContent])
-            else
+            }
+            else {
                 setQuestions([...res.data])
+            }
+            setQuesNewVal(intialQuestVal)
         }
         fun()
     }, [])
@@ -69,7 +88,6 @@ const Questions = (props) => {
 
     const changeAnswerType = id => event => {
         const ques = _.cloneDeep(questions);
-        console.log(id)
         const res = _.find(ques, { _id: id });
         if (!res) return;
         res['answerType'] = event.target.value;
@@ -89,9 +107,11 @@ const Questions = (props) => {
         const ques = _.cloneDeep(questions);
         const res = _.find(ques, { _id: id });
         if (!res) return;
-        res['answerVal'][res['answerVal'].length] = quesNewVal
+        res['answerVal'][res['answerVal'].length] = _.get(quesNewVal, id)
         setQuestions(ques)
-        setQuesNewVal("")
+        let questVal = { ...quesNewVal }
+        _.set(questVal, id, "")
+        setQuesNewVal(questVal)
     }
 
     const chnageTitle = (id) => event => {
@@ -126,12 +146,11 @@ const Questions = (props) => {
         setQuestions(ques)
     }
 
-    const onSave = async() => {
-        if(!questions.length) return;
+    const onSave = async () => {
+        if (!questions.length) return;
         let ques = _.cloneDeep(questions);
-        let req = ques[questions.length-1]
-        if(!req.title && !req.question) return;
-        console.log(req)
+        let req = ques[questions.length - 1]
+        if (!req.title && !req.question) return;
         const res = await axios.post(process.env.REACT_APP_PROXY_URL + "questions", {
             title: req.title,
             description: req.description,
@@ -139,17 +158,17 @@ const Questions = (props) => {
             answerType: req.answerType,
             answerVal: req.answerVal
         })
-        if(res.data) {
+        if (res.data) {
             req._id = res.data._id;
             ques.push(emptyQuestionContent)
             setQuestions(ques)
         }
     }
 
-    const onUpdate = (id) => async() => {
+    const onUpdate = (id) => async () => {
         let ques = _.cloneDeep(questions);
         let req = _.find(ques, { _id: id });
-        if(!req.title && !req.question) return;
+        if (!req.title && !req.question) return;
         const res = await axios.put(process.env.REACT_APP_PROXY_URL + "questions/" + id, {
             title: req.title,
             description: req.description,
@@ -157,27 +176,54 @@ const Questions = (props) => {
             answerType: req.answerType,
             answerVal: req.answerVal
         })
-        if(res.data) {
+        if (res.data) {
             setQuestions(ques)
         }
     }
 
-    const onRemove = (id) => async() => {
+    const onRemove = (id) => async () => {
         let ques = _.cloneDeep(questions);
         let req = _.findIndex(ques, { _id: id });
-        if(req === -1) return;
-        if(!ques[req].title && !ques[req].question) return;
+        if (req === -1) return;
+        if (!ques[req].title && !ques[req].question) return;
         const res = await axios.delete(process.env.REACT_APP_PROXY_URL + "questions/" + id)
-        if(res.data) {
+        if (res.data) {
             ques.splice(req, 1);
             setQuestions(ques)
         }
     }
 
+    const onSubmit = async () => {
+        if (!answers) {
+            alert("please answer the questions above!")
+            return;
+        }
+        await axios.create(process.env.REACT_APP_PROXY_URL + "answer", {
+            walletAddr: publicKey,
+            answer: answers
+        })
+    }
+
+    const onChangeOptional = id => e => {
+        const answerNew = [...answers];
+        const res = _.find(answerNew, {questionId: id})
+        if(!res) {
+            answerNew.push({questionId: id, values: [e.target.value]})
+        } else {
+            res.values = [e.target.value]
+        }
+        setAnswers()
+        console.log(answerNew)
+    }
+
+    const onChangeCheckbox = id => e => {
+
+    }
+
     const renderContent = () => {
         if (isAdmin) {
             return <>
-                <ButtonGroup color="primary" aria-label="outlined secondary button group">
+                <ButtonGroup color="primary" aria-label="outlined secondary button group" style={{ marginLeft: 20 }}>
                     <Button className={isWrite ? "ques-btn-white" : ""} onClick={selectMode(true)}>Write</Button>
                     <Button className={!isWrite ? "ques-btn-white" : ""} onClick={selectMode(false)}>Preview</Button>
                 </ButtonGroup>
@@ -195,7 +241,10 @@ const Questions = (props) => {
                 }
             </>
         } else {
-            return renderViewQuestions()
+            return <>
+                {renderViewQuestions()}
+                <Button variant="contained" color="primary" style={{ marginTop: 30 }} onClick={onSubmit}>Submit</Button>
+            </>
         }
     }
 
@@ -203,6 +252,7 @@ const Questions = (props) => {
         return (
             <div>
                 {_.map(questions, (question, index) => {
+                    if (index === questions.length - 1 && !question.title && !question.question) return null;
                     return <React.Fragment key={index}>
                         <div className="ques-view-title" >
                             <div className="ques-view-title-mark" />
@@ -212,19 +262,19 @@ const Questions = (props) => {
                             {question.description}
                         </div>
                         <div className="ques-view-ques">
-                            {question.question}
+                            <h3>{question.question}</h3>
                         </div>
-                        {question.answerType === OPTIONAL && <RadioGroup aria-label="quiz" name="quiz" >
+                        {question.answerType === OPTIONAL && <RadioGroup aria-label="quiz" name="quiz" style={{ paddingLeft: 20 }} onChange={onChangeOptional(question._id)}>
                             {
                                 _.map(question.answerVal, (each, index) => {
                                     return <FormControlLabel value={each} control={<Radio />} label={each} key={index} />
                                 })
                             }
                         </RadioGroup>}
-                        {question.answerType === MULTISELECT && <FormGroup>
+                        {question.answerType === MULTISELECT && <FormGroup style={{ paddingLeft: 20 }}>
                             {_.map(question.answerVal, (each, index) => {
                                 return <FormControlLabel
-                                    control={<Checkbox name={each} />}
+                                    control={<Checkbox name={each} onChange={onChangeCheckbox(question._id)} />}
                                     label={each}
                                     key={index}
                                 />
@@ -237,6 +287,7 @@ const Questions = (props) => {
     }
 
     const renderEachQuestion = (question) => {
+        const id = question._id;
         return (
             <div key={question._id} className="ques-wrapper">
                 <TextField
@@ -299,9 +350,13 @@ const Questions = (props) => {
                         }
                         <div className='ques-val'>
                             <TextField
-                                label="values"onUpdate
-                                value={quesNewVal}
-                                onChange={(e) => { setQuesNewVal(e.target.value) }}
+                                label="values"
+                                value={_.get(quesNewVal, id)}
+                                onChange={(e) => {
+                                    const quesVal = { ...quesNewVal }
+                                    _.set(quesVal, id, e.target.value)
+                                    setQuesNewVal(quesVal)
+                                }}
                                 fullWidth
                                 style={{ marginRight: 10 }}
                             />

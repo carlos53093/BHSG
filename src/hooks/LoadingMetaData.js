@@ -15,7 +15,7 @@ const useConnectWallet = () => {
         params: { account: publicKey },
       })
       // setAccountCnt(info.data.length)
-      console.log(info.data)
+      console.log("----loadMetaData----",info.data)
       setTokenInfo(info.data)
       _.map(info.data, async (each) => {
         const temp = await axios.get(GetMetaDataUrl + each.tokenAddress)
@@ -34,8 +34,10 @@ const useConnectWallet = () => {
         params: { account: publicKey },
       })
       // setAccountCnt(info.data.length)
-      console.log(info.data)
-      setTokenInfo(info.data)
+      console.log("----loadTokenAddressList----",info.data)
+      setTokenInfo(_.filter(info.data, each=>{
+        return each.tokenAmount.amount !== "0"
+      }))
     } catch (err) {}
   }
 

@@ -45,6 +45,7 @@ const ConnectWallet = (props) => {
   useEffect(() => {
     (async() => {
       let tokenAddress = null;
+      console.log(tokenInfo)
       for(let i = 0; i < tokenInfo.length; i++) {
         console.log("------------token array id-----", i, tokenInfo[i].tokenAddress)
         if( mintList1.indexOf(tokenInfo[i].tokenAddress) !== -1) {

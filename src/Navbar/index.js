@@ -47,7 +47,7 @@ const Navbar = ({toggle}) => {
         if(publicKey) {
             history.push("/questions");
         }
-        else return;
+        else alert("please connect your wallet");
     }
 
     return (
