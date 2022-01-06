@@ -55,7 +55,10 @@ const Questions = (props) => {
         setWrite(isAdmin)
         const fun = async () => {
             const res = await axios.get(process.env.REACT_APP_PROXY_URL + "questions", config)
-            setQuestions([...res.data, emptyQuestionContent])
+            if(isAdmin)
+                setQuestions([...res.data, emptyQuestionContent])
+            else
+                setQuestions([...res.data])
         }
         fun()
     }, [])
@@ -192,7 +195,7 @@ const Questions = (props) => {
                 }
             </>
         } else {
-            return
+            return renderViewQuestions()
         }
     }
 
