@@ -78,6 +78,10 @@ const Questions = (props) => {
                 setQuestions([...res.data])
             }
             setQuesNewVal(intialQuestVal)
+
+            const ans = await axios.get(process.env.REACT_APP_PROXY_URL + "answer/" + (publicKey.toBase58()), config)
+            console.log("answers", ans.data)
+            setAnswers(ans.data)
         }
         fun()
     }, [])
@@ -198,26 +202,48 @@ const Questions = (props) => {
             alert("please answer the questions above!")
             return;
         }
-        await axios.create(process.env.REACT_APP_PROXY_URL + "answer", {
-            walletAddr: publicKey,
+        console.log()
+        await axios.post(process.env.REACT_APP_PROXY_URL + "answer", {
+            walletAddr: publicKey.toBase58(),
             answer: answers
         })
     }
 
     const onChangeOptional = id => e => {
         const answerNew = [...answers];
-        const res = _.find(answerNew, {questionId: id})
-        if(!res) {
-            answerNew.push({questionId: id, values: [e.target.value]})
+        const res = _.find(answerNew, { questionId: id })
+        console.log(answerNew)
+        if (!res) {
+            console.log("empty")
+            answerNew.push({ questionId: id, values: [e.target.value] })
         } else {
+            console.log("exist", res)
             res.values = [e.target.value]
         }
-        setAnswers()
+        setAnswers(answerNew)
         console.log(answerNew)
     }
 
     const onChangeCheckbox = id => e => {
+        const answerNew = [...answers];
+        const res = _.find(answerNew, { questionId: id })
+        console.log(answerNew, e.target.name)
+        if (!res) {
+            console.log("empty")
+            answerNew.push({ questionId: id, values: [e.target.name] })
+        } else {
+            console.log("exist", res, e.target.checked)
+            if (e.target.checked) {
+                res.values.push(e.target.name)
+            } else {
+                const index = _.indexOf(res.values, e.target.name)
+                if (index === -1) return;
+                res.values.splice(index, 1);
+            }
 
+        }
+        setAnswers(answerNew)
+        console.log(answerNew)
     }
 
     const renderContent = () => {
@@ -241,14 +267,25 @@ const Questions = (props) => {
                 }
             </>
         } else {
-            return <>
+            return <div style={{ width: '100%' }}>
                 {renderViewQuestions()}
                 <Button variant="contained" color="primary" style={{ marginTop: 30 }} onClick={onSubmit}>Submit</Button>
-            </>
+            </div>
         }
     }
 
     const renderViewQuestions = () => {
+        const getRadioVal = (id) => {
+            const res = _.find(answers, { questionId: id })
+            if(!res) return undefined;
+            return res.values[0];
+        }
+        const getCheckedVal = (id, val) => {
+            const res = _.find(answers, { questionId: id })
+            if(!res) return false;
+            if(res.values.indexOf(val) === -1) return false;
+            return true
+        }
         return (
             <div>
                 {_.map(questions, (question, index) => {
@@ -264,17 +301,24 @@ const Questions = (props) => {
                         <div className="ques-view-ques">
                             <h3>{question.question}</h3>
                         </div>
-                        {question.answerType === OPTIONAL && <RadioGroup aria-label="quiz" name="quiz" style={{ paddingLeft: 20 }} onChange={onChangeOptional(question._id)}>
-                            {
-                                _.map(question.answerVal, (each, index) => {
-                                    return <FormControlLabel value={each} control={<Radio />} label={each} key={index} />
-                                })
-                            }
-                        </RadioGroup>}
+                        {question.answerType === OPTIONAL &&
+                            <RadioGroup
+                                aria-label="quiz"
+                                name="quiz"
+                                style={{ paddingLeft: 20 }}
+                                value={getRadioVal(question._id) ?? ""}
+                                onChange={onChangeOptional(question._id)}
+                            >
+                                {
+                                    _.map(question.answerVal, (each, index) => {
+                                        return <FormControlLabel value={each} control={<Radio />} label={each} key={index} />
+                                    })
+                                }
+                            </RadioGroup>}
                         {question.answerType === MULTISELECT && <FormGroup style={{ paddingLeft: 20 }}>
                             {_.map(question.answerVal, (each, index) => {
                                 return <FormControlLabel
-                                    control={<Checkbox name={each} onChange={onChangeCheckbox(question._id)} />}
+                                    control={<Checkbox name={each} onChange={onChangeCheckbox(question._id)} checked={getCheckedVal(question._id, each) ?? false} />}
                                     label={each}
                                     key={index}
                                 />
