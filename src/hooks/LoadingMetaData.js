@@ -16,8 +16,11 @@ const useConnectWallet = () => {
       })
       // setAccountCnt(info.data.length)
       console.log("----loadMetaData----",info.data)
-      setTokenInfo(info.data)
-      _.map(info.data, async (each) => {
+      const data = _.filter(info.data, each=>{
+        return each.tokenAmount.amount !== "0"
+      })
+      setTokenInfo(data)
+      _.map(data, async (each) => {
         const temp = await axios.get(GetMetaDataUrl + each.tokenAddress)
         setMetaData(temp)
         console.log("LoadMetadata------",temp)

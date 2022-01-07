@@ -240,7 +240,6 @@ const Questions = (props) => {
                 if (index === -1) return;
                 res.values.splice(index, 1);
             }
-
         }
         setAnswers(answerNew)
         console.log(answerNew)
