@@ -106,6 +106,7 @@ const App = () => {
               <Navbar toggle={toggle}/>  
                 <Switch>
                   <Route path="/" exact component={Land} />
+                  <Route path="/home/:id" exact component={Land} />
                   <Route path="/connectwallet" exact component={ConnectWallet} />
                   <Route path="/room/:url" render={(props) => <UserAssets {...props} />} />
                   <Route path="/jagasden" exact component={Cipher} />

@@ -62,22 +62,22 @@ const Navbar = ({toggle}) => {
                     </MobileIcon>
                     <NavMenu>
                         <NavItem>
-                            <NavLinks to="about" smooth={true} duration={500} spy={true} exact='true' offset={-80}>About</NavLinks>
+                            <NavLinks to="/home/about" smooth={true} duration={500} spy={true} exact='true' offset={-80}>About</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="benefits" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Utility</NavLinks>
+                            <NavLinks to="/home/benefits" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Utility</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="roadmap" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Roadmap</NavLinks>
+                            <NavLinks to="/home/roadmap" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Roadmap</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="lore" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Lore</NavLinks>
+                            <NavLinks to="/home/lore" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Lore</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="team" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Team</NavLinks>
+                            <NavLinks to="/home/team" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Team</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="faq" smooth={true} duration={500} spy={true} exact='true' offset={-80}>FAQ</NavLinks>
+                            <NavLinks to="/home/faq" smooth={true} duration={500} spy={true} exact='true' offset={-80}>FAQ</NavLinks>
                         </NavItem>
                         <NavItem>
                             <NavLinkR onClick={onClickQuestion} spy={true} exact='true' offset={-80}>Questions</NavLinkR>
