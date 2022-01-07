@@ -16,6 +16,9 @@ import FormGroup from '@material-ui/core/FormGroup';
 import Checkbox from '@material-ui/core/Checkbox';
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useHistory } from 'react-router-dom';
+import Modal from './Modal';
+import { Snackbar } from '@material-ui/core';
+import { Alert, AlertTitle } from '@material-ui/lab';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -28,6 +31,9 @@ const useStyles = makeStyles((theme) => ({
 
 const OPTIONAL = 0
 const MULTISELECT = 1
+
+const MODAL_STATE_REMOOVE = 0
+const MODAL_STATE_SUBMIT = 1
 
 const emptyQuestionContent = {
     _id: undefined,
@@ -54,37 +60,54 @@ const Questions = (props) => {
     const { publicKey } = useWallet()
     const history = useHistory()
     const [answers, setAnswers] = useState([]);
+    const [modalState, setModalState] = useState({})
+    const [resultState, setResultState] = useState({})
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
 
     useEffect(() => {
         setWrite(isAdmin)
         console.log(publicKey)
         if (!publicKey) {
-            alert('please connect your wallet');
-            history.push("/")
+            history.push("/");
+            return;
         }
         const fun = async () => {
-            const res = await axios.get(process.env.REACT_APP_PROXY_URL + "questions", config)
+            try{
+                const res = await axios.get(process.env.REACT_APP_PROXY_URL + "questions", config)
 
-            const intialQuestVal = {}
-            _.each(res.data, i => {
-                const id = i._id;
-                _.set(intialQuestVal, id, "");
-            })
-            if (isAdmin) {
-                _.set(intialQuestVal, undefined, "");
-                setQuestions([...res.data, emptyQuestionContent])
-            }
-            else {
-                setQuestions([...res.data])
-            }
-            setQuesNewVal(intialQuestVal)
+                const intialQuestVal = {}
+                _.each(res.data, i => {
+                    const id = i._id;
+                    _.set(intialQuestVal, id, "");
+                })
+                if (isAdmin) {
+                    _.set(intialQuestVal, undefined, "");
+                    setQuestions([...res.data, emptyQuestionContent])
+                }
+                else {
+                    setQuestions([...res.data])
+                }
+                setQuesNewVal(intialQuestVal)
 
-            const ans = await axios.get(process.env.REACT_APP_PROXY_URL + "answer/" + (publicKey.toBase58()), config)
-            console.log("answers", ans.data)
-            setAnswers(ans.data)
+                const ans = await axios.get(process.env.REACT_APP_PROXY_URL + "answer/" + (publicKey.toBase58()), config)
+                console.log("answers", ans.data)
+                setAnswers(ans.data)
+            } catch(e){
+                setResultState({state: "error", message: "fail in loading! Check the net connection."})
+            }
+            
         }
         fun()
     }, [])
+
+    useEffect(()=>{
+        if(!_.isEmpty(resultState)) {
+            setSnackbarOpen(true)
+            setTimeout(()=>{
+                setResultState({});
+            }, 6000)
+        }
+    },[resultState])
 
     const selectMode = isWrite => () => {
         setWrite(isWrite)
@@ -155,33 +178,44 @@ const Questions = (props) => {
         let ques = _.cloneDeep(questions);
         let req = ques[questions.length - 1]
         if (!req.title && !req.question) return;
-        const res = await axios.post(process.env.REACT_APP_PROXY_URL + "questions", {
-            title: req.title,
-            description: req.description,
-            question: req.question,
-            answerType: req.answerType,
-            answerVal: req.answerVal
-        })
-        if (res.data) {
-            req._id = res.data._id;
-            ques.push(emptyQuestionContent)
-            setQuestions(ques)
+        try {
+            const res = await axios.post(process.env.REACT_APP_PROXY_URL + "questions", {
+                title: req.title,
+                description: req.description,
+                question: req.question,
+                answerType: req.answerType,
+                answerVal: req.answerVal
+            })
+            if (res.data) {
+                req._id = res.data._id;
+                ques.push(emptyQuestionContent)
+                setQuestions(ques)
+            }
+            setResultState({state: "success", message: "Success in saving!"})
+        } catch (e) {
+            setResultState({state: "error", message: "Fail in saving! Try again."})
         }
+        
     }
 
     const onUpdate = (id) => async () => {
         let ques = _.cloneDeep(questions);
         let req = _.find(ques, { _id: id });
         if (!req.title && !req.question) return;
-        const res = await axios.put(process.env.REACT_APP_PROXY_URL + "questions/" + id, {
-            title: req.title,
-            description: req.description,
-            question: req.question,
-            answerType: req.answerType,
-            answerVal: req.answerVal
-        })
-        if (res.data) {
-            setQuestions(ques)
+        try {
+            const res = await axios.put(process.env.REACT_APP_PROXY_URL + "questions/" + id, {
+                title: req.title,
+                description: req.description,
+                question: req.question,
+                answerType: req.answerType,
+                answerVal: req.answerVal
+            })
+            if (res.data) {
+                setQuestions(ques)
+            }
+            setResultState({state: "success", message: "Updated successfully!"})
+        } catch (e) {
+            setResultState({state: "error", message: "Fail in updating! Try again."})
         }
     }
 
@@ -190,19 +224,23 @@ const Questions = (props) => {
         let req = _.findIndex(ques, { _id: id });
         if (req === -1) return;
         if (!ques[req].title && !ques[req].question) return;
-        const res = await axios.delete(process.env.REACT_APP_PROXY_URL + "questions/" + id)
-        if (res.data) {
-            ques.splice(req, 1);
-            setQuestions(ques)
+        try {
+            const res = await axios.delete(process.env.REACT_APP_PROXY_URL + "questions/" + id)
+            if (res.data) {
+                ques.splice(req, 1);
+                setQuestions(ques)
+            }
+            setResultState({state: "success", message: "Removed successfully!"})
+        } catch(e) {
+            setResultState({state: "error", message: "Fail in removing! Try again."})
         }
     }
 
     const onSubmit = async () => {
         if (!answers) {
-            alert("please answer the questions above!")
+            setResultState({state: "warning", message: "please answer the questions below!"})
             return;
         }
-        console.log()
         await axios.post(process.env.REACT_APP_PROXY_URL + "answer", {
             walletAddr: publicKey.toBase58(),
             answer: answers
@@ -245,6 +283,23 @@ const Questions = (props) => {
         console.log(answerNew)
     }
 
+    const modalConfirm = () => {
+        if (modalState.state === MODAL_STATE_REMOOVE) {
+            onRemove(modalState.id)()
+        } else if (modalState.state === MODAL_STATE_SUBMIT) {
+            onSubmit()
+        }
+        setModalState({})
+    }
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+    
+        setSnackbarOpen(false);
+      };
+
     const renderContent = () => {
         if (isAdmin) {
             return <>
@@ -268,7 +323,9 @@ const Questions = (props) => {
         } else {
             return <div style={{ width: '100%' }}>
                 {renderViewQuestions()}
-                <Button variant="contained" color="primary" style={{ marginTop: 30 }} onClick={onSubmit}>Submit</Button>
+                <Button variant="contained" color="primary" style={{ marginTop: 30 }} onClick={() => {
+                    setModalState({ open: true, content: "Did you check all of them?", state: MODAL_STATE_SUBMIT })
+                }}>Submit</Button>
             </div>
         }
     }
@@ -276,13 +333,13 @@ const Questions = (props) => {
     const renderViewQuestions = () => {
         const getRadioVal = (id) => {
             const res = _.find(answers, { questionId: id })
-            if(!res) return undefined;
+            if (!res) return undefined;
             return res.values[0];
         }
         const getCheckedVal = (id, val) => {
             const res = _.find(answers, { questionId: id })
-            if(!res) return false;
-            if(res.values.indexOf(val) === -1) return false;
+            if (!res) return false;
+            if (res.values.indexOf(val) === -1) return false;
             return true
         }
         return (
@@ -339,7 +396,7 @@ const Questions = (props) => {
                     style={{ margin: 8 }}
                     placeholder="Title"
                     margin="normal"
-                    value={question.title}
+                    value={question.title ?? ""}
                     onChange={chnageTitle(question._id)}
                 />
                 <TextField
@@ -347,7 +404,7 @@ const Questions = (props) => {
                     label="Description"
                     multiline
                     style={{ margin: 8 }}
-                    value={question.description}
+                    value={question.description ?? ""}
                     onChange={chnageDescription(question._id)}
                 />
                 <TextField
@@ -355,7 +412,7 @@ const Questions = (props) => {
                     style={{ margin: 8 }}
                     placeholder="What is your favourite sports?"
                     margin="normal"
-                    value={question.question}
+                    value={question.question ?? ""}
                     onChange={chnageQuestion(question._id)}
                 />
                 <div style={{ margin: 8, display: 'flex', justifyContent: 'start', alignItems: 'center' }}>
@@ -394,7 +451,7 @@ const Questions = (props) => {
                         <div className='ques-val'>
                             <TextField
                                 label="values"
-                                value={_.get(quesNewVal, id)}
+                                value={_.get(quesNewVal, id, "")}
                                 onChange={(e) => {
                                     const quesVal = { ...quesNewVal }
                                     _.set(quesVal, id, e.target.value)
@@ -414,7 +471,14 @@ const Questions = (props) => {
                     :
                     <div className="ques-save-container">
                         <Button variant='contained' color="primary" onClick={onUpdate(question._id)}>Update</Button>
-                        <Button variant='contained' color="secondary" onClick={onRemove(question._id)}>Remove</Button>
+                        <Button variant='contained' color="secondary" onClick={() => {
+                            setModalState({
+                                open: true,
+                                content: "You are going to remove the question now.",
+                                state: MODAL_STATE_REMOOVE,
+                                id: question._id
+                            })
+                        }}>Remove</Button>
                     </div>
                 }
             </div>
@@ -432,6 +496,25 @@ const Questions = (props) => {
             <div className={classes.root} >
                 {renderContent()}
             </div>
+            <Modal
+                open={modalState.open ?? false}
+                content={modalState.content ?? ""}
+                confirm={modalConfirm}
+                onClose={()=>{setModalState({})}}
+            />
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={snackbarOpen}
+                autoHideDuration={5000}
+                onClose={handleClose}
+                message="I love snacks"
+                key={'top' + 'center'}
+            >
+                <Alert severity={resultState.state} variant="filled">
+                    <AlertTitle>{resultState.state}</AlertTitle>
+                    {resultState.message}
+                </Alert>
+            </Snackbar>
         </div>
     )
 }

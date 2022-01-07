@@ -7,10 +7,7 @@ import { useEffect, useState } from 'react'
 import _ from 'lodash'
 import {
   Card,
-  CardHeader,
   CardMedia,
-  CardContent,
-  Typography,
 } from '@material-ui/core'
 import useConnectWallet from '../hooks/LoadingMetaData'
 import mintList1 from "../MINT_LIST_1.json";
@@ -31,11 +28,12 @@ import { setAdmin } from '../actions/UserInfo'
 const ConnectWallet = (props) => {
 
   const { publicKey } = useWallet()
-  const { loadTokenAddressList , tokenInfo, loadTokenInfo, metaData } = useConnectWallet()
+  const { loadTokenAddressList , tokenInfo, loadTokenInfo, metaData, setMetaData } = useConnectWallet()
   const [defaultTokenInfo, setDefaultTokenInfo] = useState(null)
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    setMetaData(null)
     if (publicKey) {
       dispatch(setAdmin(false));
       loadTokenAddressList(publicKey.toBase58())

@@ -50,7 +50,7 @@ const useConnectWallet = () => {
     
   }
 
-  return { metaData, loadMetaData, tokenInfo, loadTokenAddressList, loadTokenInfo }
+  return { metaData, loadMetaData, tokenInfo, loadTokenAddressList, loadTokenInfo, setMetaData }
 }
 
 export default useConnectWallet
