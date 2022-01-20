@@ -18,7 +18,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useHistory } from 'react-router-dom';
 import Modal from './Modal';
 import { Snackbar } from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import { Alert, AlertTitle, Autocomplete } from '@material-ui/lab';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -63,6 +63,8 @@ const Questions = (props) => {
     const [modalState, setModalState] = useState({})
     const [resultState, setResultState] = useState({})
     const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [votes, setVotes] = useState(0);
+    const [correctAnswer, setCorrectAnswer] = useState([])
 
     useEffect(() => {
         setWrite(isAdmin)
@@ -91,7 +93,8 @@ const Questions = (props) => {
 
                 const ans = await axios.get(process.env.REACT_APP_PROXY_URL + "answer/" + (publicKey.toBase58()), config)
                 console.log("answers", ans.data)
-                setAnswers(ans.data)
+                setAnswers(ans.data.answer)
+                setVotes(ans.data.tokenInfo.length)
             } catch(e){
                 setResultState({state: "error", message: "fail in loading! Check the net connection."})
             }
@@ -115,9 +118,9 @@ const Questions = (props) => {
 
     const changeAnswerType = id => event => {
         const ques = _.cloneDeep(questions);
-        const res = _.find(ques, { _id: id });
-        if (!res) return;
-        res['answerType'] = event.target.value;
+        const res = _.findIndex(ques, { _id: id });
+        if (res === -1) return;
+        _.set(ques, [res, 'answerType'], event.target.value);
         setQuestions(ques)
     }
 
@@ -125,7 +128,7 @@ const Questions = (props) => {
         const ques = _.cloneDeep(questions);
         const res = _.find(ques, { _id: id });
         if (!res) return;
-        res['answerVal'][index] = event.target.value
+        _.set(res, ['answerVal', index, 'title'], event.target.value)
         setQuestions(ques)
     }
 
@@ -134,7 +137,7 @@ const Questions = (props) => {
         const ques = _.cloneDeep(questions);
         const res = _.find(ques, { _id: id });
         if (!res) return;
-        res['answerVal'][res['answerVal'].length] = _.get(quesNewVal, id)
+        _.set(res, ["answerVal", res['answerVal'].length, "title"], _.get(quesNewVal, id));
         setQuestions(ques)
         let questVal = { ...quesNewVal }
         _.set(questVal, id, "")
@@ -241,13 +244,29 @@ const Questions = (props) => {
             setResultState({state: "warning", message: "please answer the questions below!"})
             return;
         }
-        await axios.post(process.env.REACT_APP_PROXY_URL + "answer", {
-            walletAddr: publicKey.toBase58(),
-            answer: answers
+        const correctAsw = [];
+        _.each(questions, each=>{
+            const id = each._id;
+            const title = [];
+            _.each(each.answerVal, i=>{
+                if(i.isAnswer) {
+                    title.push(i.title)
+                }
+            })
+            correctAsw.push({id, title})
         })
+        console.log("correctAsw",correctAsw);
+        setCorrectAnswer(correctAsw);
+
+        try {
+            const res = await axios.post(process.env.REACT_APP_PROXY_URL + "answer", { walletAddr: publicKey.toBase58(), answer: answers});
+        } catch(e) {
+            setResultState({state: "error", message: "Fail in removing! Try again."})
+        }
     }
 
     const onChangeOptional = id => e => {
+        setCorrectAnswer([]);
         const answerNew = [...answers];
         const res = _.find(answerNew, { questionId: id })
         console.log(answerNew)
@@ -263,6 +282,7 @@ const Questions = (props) => {
     }
 
     const onChangeCheckbox = id => e => {
+        setCorrectAnswer([]);
         const answerNew = [...answers];
         const res = _.find(answerNew, { questionId: id })
         console.log(answerNew, e.target.name)
@@ -300,6 +320,65 @@ const Questions = (props) => {
         setSnackbarOpen(false);
       };
 
+    const  onCompleteChange =(id)=> (event, newValue) => {
+        let ques = _.cloneDeep(questions);
+        const quesIndex = _.findIndex(ques, {_id: id});
+        if(quesIndex === -1) return;
+        _.each(ques[quesIndex]["answerVal"], answers=>{
+            answers.isAnswer = false;
+        })
+        if(!newValue) return;
+        if(ques[quesIndex]["answerType"] === MULTISELECT) {
+            _.each(newValue, i=>{
+                const answerId = _.findIndex(ques[quesIndex]["answerVal"], {_id: i._id});
+                if(answerId === -1) return;
+                _.set(ques, [quesIndex,"answerVal", answerId, "isAnswer"], true);
+            })
+        } else {
+            const answerId = _.findIndex(ques[quesIndex]["answerVal"], {_id: newValue._id});
+            if(answerId === -1) return;
+            _.set(ques, [quesIndex,"answerVal", answerId, "isAnswer"], true);
+        }
+        
+        console.log(ques)
+        setQuestions(ques)
+    }
+
+    const getAutoCompleteVal = (id) => {
+        const quesIndex = _.findIndex(questions, {_id: id});
+        console.log(questions[quesIndex]["answerVal"])
+        let res;
+        if(!questions[quesIndex]["_id"]) return;
+        if(questions[quesIndex]["answerType"] === MULTISELECT) {
+            res = _.filter(questions[quesIndex]["answerVal"], i=>{
+                if(i.isAnswer) return i;
+            });
+        } else {
+            res = _.find(questions[quesIndex]["answerVal"], {isAnswer: true})
+        }
+        console.log(res);
+        return res;
+    }
+
+    const getVote = (id) => {
+        if(!correctAnswer.length) return '';
+        const correctAws = _.find(correctAnswer, {id: id});
+        const values = _.find(answers, {questionId: id});
+        if(!correctAws || !values) return '';
+        if(_.isEqual(correctAws.title, values.values)){
+            return `Vote: +${votes}`;
+        }
+        return '';
+    }
+
+    const getTotal = () => {
+        let total = 0;
+        _.each(questions, i=>{
+            if(getVote(i._id) !== '') total += votes;
+        })
+        return `Total: +${total}`;
+    }
+
     const renderContent = () => {
         if (isAdmin) {
             return <>
@@ -322,6 +401,9 @@ const Questions = (props) => {
             </>
         } else {
             return <div style={{ width: '100%' }}>
+                <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+                    <div >{getTotal()}</div>
+                </div>
                 {renderViewQuestions()}
                 <Button variant="contained" color="primary" style={{ marginTop: 30 }} onClick={() => {
                     setModalState({ open: true, content: "Did you check all of them?", state: MODAL_STATE_SUBMIT })
@@ -339,7 +421,7 @@ const Questions = (props) => {
         const getCheckedVal = (id, val) => {
             const res = _.find(answers, { questionId: id })
             if (!res) return false;
-            if (res.values.indexOf(val) === -1) return false;
+            if (res.values.indexOf(val.title) === -1) return false;
             return true
         }
         return (
@@ -350,6 +432,7 @@ const Questions = (props) => {
                         <div className="ques-view-title" >
                             <div className="ques-view-title-mark" />
                             {index + 1}. {question.title}
+                            <div style={{position: 'absolute', top: 10, right: 20}}>{getVote(question._id)}</div>
                         </div>
                         <div className="ques-view-description">
                             {question.description}
@@ -367,18 +450,18 @@ const Questions = (props) => {
                             >
                                 {
                                     _.map(question.answerVal, (each, index) => {
-                                        return <FormControlLabel value={each} control={<Radio />} label={each} key={index} />
+                                        return <FormControlLabel value={each.title} control={<Radio />} label={each.title} key={index} />
                                     })
                                 }
                             </RadioGroup>}
                         {question.answerType === MULTISELECT && <FormGroup style={{ paddingLeft: 20 }}>
                             {_.map(question.answerVal, (each, index) => {
                                 return <FormControlLabel
-                                    control={<Checkbox name={each} onChange={onChangeCheckbox(question._id)} checked={getCheckedVal(question._id, each) ?? false} />}
-                                    label={each}
+                                    control={<Checkbox name={each.title} onChange={onChangeCheckbox(question._id)} checked={getCheckedVal(question._id, each) ?? false} />}
+                                    label={each.title}
                                     key={index}
                                 />
-                            })}
+                            })} 
                         </FormGroup>}
                     </React.Fragment>
                 })}
@@ -421,7 +504,7 @@ const Questions = (props) => {
                         select
                         label="Select"
                         value={question.answerType}
-                        onChange={changeAnswerType(question.id)}
+                        onChange={changeAnswerType(id)}
                         style={{ width: '30%' }}
                     >
                         <MenuItem value={OPTIONAL}>
@@ -438,7 +521,7 @@ const Questions = (props) => {
                                     <div className='ques-val' key={index}>
                                         <TextField
                                             label="values"
-                                            value={each}
+                                            value={each.title}
                                             onChange={changeAnserValue(question._id, index)}
                                             fullWidth
                                             style={{ marginRight: 10 }}
@@ -464,6 +547,35 @@ const Questions = (props) => {
                         </div>
                     </div>
                 </div>
+                {question.answerType === MULTISELECT && <Autocomplete
+                    multiple
+                    options={question.answerVal}
+                    getOptionLabel={(option) => option.title||""}
+                    onChange={onCompleteChange(id)}
+                    value={getAutoCompleteVal(id) || []}
+                    renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          label="Answer"
+                          placeholder="Answer"
+                        />
+                      )}
+                />}
+                {question.answerType === OPTIONAL && <Autocomplete
+                    options={question.answerVal}
+                    getOptionLabel={(option) => option.title||""}
+                    onChange={onCompleteChange(id)}
+                    value={getAutoCompleteVal(id) || {}}
+                    renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          label="Answer"
+                          placeholder="Answer"
+                        />
+                      )}
+                />}
                 {!question._id ?
                     <div className="ques-save-container">
                         <Button variant='contained' color="primary" onClick={onSave}>Save</Button>

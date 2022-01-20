@@ -30,6 +30,7 @@ const ConnectWallet = (props) => {
   const { publicKey } = useWallet()
   const { loadTokenAddressList , tokenInfo, loadTokenInfo, metaData, setMetaData } = useConnectWallet()
   const [defaultTokenInfo, setDefaultTokenInfo] = useState(null)
+  const [bountyTokenList, setBountyTokenList] = useState([]);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -42,18 +43,20 @@ const ConnectWallet = (props) => {
 
   useEffect(() => {
     (async() => {
-      let tokenAddress = null;
+      let tokenAddress = [];
       console.log(tokenInfo)
       for(let i = 0; i < tokenInfo.length; i++) {
         console.log("------------token array id-----", i, tokenInfo[i].tokenAddress)
         if( mintList1.indexOf(tokenInfo[i].tokenAddress) !== -1) {
           console.log("-------- belong to the mintList1----------", mintList1.indexOf(tokenInfo[i].tokenAddress))
-          tokenAddress = tokenInfo[i].tokenAddress;
-          break;
+          tokenAddress.push(tokenInfo[i].tokenAddress);
+          // break;
         }
       }
-      if(tokenAddress) {
-        loadTokenInfo(tokenAddress)
+      console.log("++++++++++++Bounty Token List", tokenAddress)
+      if(tokenAddress.length) {
+        setBountyTokenList(tokenAddress)
+        loadTokenInfo(tokenAddress[0])
       }
     })()
   }, [tokenInfo])
@@ -71,7 +74,8 @@ const ConnectWallet = (props) => {
       const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
         walletAddr: publicKey.toBase58(),
         defaultTokenAddress: metaData.Mint,
-        url: url
+        url: url,
+        tokenInfo: bountyTokenList
       })
       setDefaultTokenInfo(res.data)
       console.log("-----metaData-----",res.data)
