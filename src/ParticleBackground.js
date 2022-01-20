@@ -5,7 +5,7 @@ import Particles from "react-particles-js"
 const ParticleBackground = () => {
     return (
         <div style={{backgroundColor: "black"}}>
-            {/* <Particles params={particlesconfig}></Particles> */}
+            <Particles params={particlesconfig}></Particles>
         </div>
     )
 }
