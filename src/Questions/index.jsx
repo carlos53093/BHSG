@@ -267,10 +267,10 @@ const Questions = (props) => {
         console.log(answerNew)
         if (!res) {
             console.log("empty")
-            answerNew.push({ questionId: id, values: aswid })
+            answerNew.push({ questionId: id, values: [aswid] })
         } else {
             console.log("exist", res)
-            res.values = aswid
+            res.values = [aswid]
         }
         setAnswers(answerNew)
         console.log(answerNew)
@@ -348,7 +348,7 @@ const Questions = (props) => {
         const getRadioVal = (id) => {
             const res = _.find(answers, { questionId: id })
             if (!res) return undefined;
-            return res.values;
+             return _.get(res.values, 0, "");
         }
         const getCheckedVal = (id, val) => {
             const res = _.find(answers, { questionId: id })
