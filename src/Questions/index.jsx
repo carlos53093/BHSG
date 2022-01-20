@@ -63,8 +63,7 @@ const Questions = (props) => {
     const [modalState, setModalState] = useState({})
     const [resultState, setResultState] = useState({})
     const [snackbarOpen, setSnackbarOpen] = useState(false)
-    const [votes, setVotes] = useState(0);
-    const [correctAnswer, setCorrectAnswer] = useState([])
+    const [votes, setVotes] = useState([]);
 
     useEffect(() => {
         setWrite(isAdmin)
@@ -93,9 +92,16 @@ const Questions = (props) => {
 
                 const ans = await axios.get(process.env.REACT_APP_PROXY_URL + "answer/" + (publicKey.toBase58()), config)
                 console.log("answers", ans.data)
-                setAnswers(ans.data.answer)
-                setVotes(ans.data.tokenInfo.length)
+                if(ans.data === "") {
+                    setAnswers([]);
+                    setVotes([])
+                } else {
+                    setAnswers(ans.data.answers.answer);
+                    setVotes(ans.data.voteList);
+                }
+                
             } catch(e){
+                console.log(e);
                 setResultState({state: "error", message: "fail in loading! Check the net connection."})
             }
             
@@ -244,57 +250,45 @@ const Questions = (props) => {
             setResultState({state: "warning", message: "please answer the questions below!"})
             return;
         }
-        const correctAsw = [];
-        _.each(questions, each=>{
-            const id = each._id;
-            const title = [];
-            _.each(each.answerVal, i=>{
-                if(i.isAnswer) {
-                    title.push(i.title)
-                }
-            })
-            correctAsw.push({id, title})
-        })
-        console.log("correctAsw",correctAsw);
-        setCorrectAnswer(correctAsw);
+        console.log("correctAsw",answers);
 
         try {
             const res = await axios.post(process.env.REACT_APP_PROXY_URL + "answer", { walletAddr: publicKey.toBase58(), answer: answers});
+            console.log(res);
+            setVotes(res.data.voteList);
         } catch(e) {
             setResultState({state: "error", message: "Fail in removing! Try again."})
         }
     }
 
-    const onChangeOptional = id => e => {
-        setCorrectAnswer([]);
+    const onChangeOptional = (id, aswid) => e => {
         const answerNew = [...answers];
         const res = _.find(answerNew, { questionId: id })
         console.log(answerNew)
         if (!res) {
             console.log("empty")
-            answerNew.push({ questionId: id, values: [e.target.value] })
+            answerNew.push({ questionId: id, values: aswid })
         } else {
             console.log("exist", res)
-            res.values = [e.target.value]
+            res.values = aswid
         }
         setAnswers(answerNew)
         console.log(answerNew)
     }
 
-    const onChangeCheckbox = id => e => {
-        setCorrectAnswer([]);
+    const onChangeCheckbox = (id, aswid) => e => {
         const answerNew = [...answers];
         const res = _.find(answerNew, { questionId: id })
-        console.log(answerNew, e.target.name)
+        console.log(answerNew, aswid)
         if (!res) {
             console.log("empty")
-            answerNew.push({ questionId: id, values: [e.target.name] })
+            answerNew.push({ questionId: id, values: [aswid] })
         } else {
             console.log("exist", res, e.target.checked)
             if (e.target.checked) {
-                res.values.push(e.target.name)
+                res.values.push(aswid)
             } else {
-                const index = _.indexOf(res.values, e.target.name)
+                const index = _.indexOf(res.values, aswid)
                 if (index === -1) return;
                 res.values.splice(index, 1);
             }
@@ -320,65 +314,6 @@ const Questions = (props) => {
         setSnackbarOpen(false);
       };
 
-    const  onCompleteChange =(id)=> (event, newValue) => {
-        let ques = _.cloneDeep(questions);
-        const quesIndex = _.findIndex(ques, {_id: id});
-        if(quesIndex === -1) return;
-        _.each(ques[quesIndex]["answerVal"], answers=>{
-            answers.isAnswer = false;
-        })
-        if(!newValue) return;
-        if(ques[quesIndex]["answerType"] === MULTISELECT) {
-            _.each(newValue, i=>{
-                const answerId = _.findIndex(ques[quesIndex]["answerVal"], {_id: i._id});
-                if(answerId === -1) return;
-                _.set(ques, [quesIndex,"answerVal", answerId, "isAnswer"], true);
-            })
-        } else {
-            const answerId = _.findIndex(ques[quesIndex]["answerVal"], {_id: newValue._id});
-            if(answerId === -1) return;
-            _.set(ques, [quesIndex,"answerVal", answerId, "isAnswer"], true);
-        }
-        
-        console.log(ques)
-        setQuestions(ques)
-    }
-
-    const getAutoCompleteVal = (id) => {
-        const quesIndex = _.findIndex(questions, {_id: id});
-        console.log(questions[quesIndex]["answerVal"])
-        let res;
-        if(!questions[quesIndex]["_id"]) return;
-        if(questions[quesIndex]["answerType"] === MULTISELECT) {
-            res = _.filter(questions[quesIndex]["answerVal"], i=>{
-                if(i.isAnswer) return i;
-            });
-        } else {
-            res = _.find(questions[quesIndex]["answerVal"], {isAnswer: true})
-        }
-        console.log(res);
-        return res;
-    }
-
-    const getVote = (id) => {
-        if(!correctAnswer.length) return '';
-        const correctAws = _.find(correctAnswer, {id: id});
-        const values = _.find(answers, {questionId: id});
-        if(!correctAws || !values) return '';
-        if(_.isEqual(correctAws.title, values.values)){
-            return `Vote: +${votes}`;
-        }
-        return '';
-    }
-
-    const getTotal = () => {
-        let total = 0;
-        _.each(questions, i=>{
-            if(getVote(i._id) !== '') total += votes;
-        })
-        return `Total: +${total}`;
-    }
-
     const renderContent = () => {
         if (isAdmin) {
             return <>
@@ -401,9 +336,6 @@ const Questions = (props) => {
             </>
         } else {
             return <div style={{ width: '100%' }}>
-                <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                    <div >{getTotal()}</div>
-                </div>
                 {renderViewQuestions()}
                 <Button variant="contained" color="primary" style={{ marginTop: 30 }} onClick={() => {
                     setModalState({ open: true, content: "Did you check all of them?", state: MODAL_STATE_SUBMIT })
@@ -416,23 +348,24 @@ const Questions = (props) => {
         const getRadioVal = (id) => {
             const res = _.find(answers, { questionId: id })
             if (!res) return undefined;
-            return res.values[0];
+            return res.values;
         }
         const getCheckedVal = (id, val) => {
             const res = _.find(answers, { questionId: id })
             if (!res) return false;
-            if (res.values.indexOf(val.title) === -1) return false;
+            if (_.indexOf(res.values, val._id) === -1) {
+                return false;
+            }
             return true
         }
         return (
             <div>
                 {_.map(questions, (question, index) => {
-                    if (index === questions.length - 1 && !question.title && !question.question) return null;
+                    if (index === questions.length - 1 && !question._id && !question.question) return null;
                     return <React.Fragment key={index}>
                         <div className="ques-view-title" >
                             <div className="ques-view-title-mark" />
                             {index + 1}. {question.title}
-                            <div style={{position: 'absolute', top: 10, right: 20}}>{getVote(question._id)}</div>
                         </div>
                         <div className="ques-view-description">
                             {question.description}
@@ -446,21 +379,25 @@ const Questions = (props) => {
                                 name="quiz"
                                 style={{ paddingLeft: 20 }}
                                 value={getRadioVal(question._id) ?? ""}
-                                onChange={onChangeOptional(question._id)}
                             >
                                 {
                                     _.map(question.answerVal, (each, index) => {
-                                        return <FormControlLabel value={each.title} control={<Radio />} label={each.title} key={index} />
+                                        return <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                            <FormControlLabel onChange={onChangeOptional(question._id, each._id)} value={each._id} control={<Radio />} label={each.title} key={index} />
+                                            <div style={{}}>Votes: {_.find(votes, {id: each._id})?.votes || 0}</div>
+                                        </div>
                                     })
                                 }
                             </RadioGroup>}
                         {question.answerType === MULTISELECT && <FormGroup style={{ paddingLeft: 20 }}>
                             {_.map(question.answerVal, (each, index) => {
-                                return <FormControlLabel
-                                    control={<Checkbox name={each.title} onChange={onChangeCheckbox(question._id)} checked={getCheckedVal(question._id, each) ?? false} />}
+                                return <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}><FormControlLabel
+                                    control={<Checkbox name={each._id} onChange={onChangeCheckbox(question._id, each._id)} checked={getCheckedVal(question._id, each) ?? false} />}
                                     label={each.title}
                                     key={index}
                                 />
+                                <div style={{}}>Votes: {_.find(votes, {id: each._id})?.votes || 0}</div>
+                                </div>
                             })} 
                         </FormGroup>}
                     </React.Fragment>
@@ -547,35 +484,7 @@ const Questions = (props) => {
                         </div>
                     </div>
                 </div>
-                {question.answerType === MULTISELECT && <Autocomplete
-                    multiple
-                    options={question.answerVal}
-                    getOptionLabel={(option) => option.title||""}
-                    onChange={onCompleteChange(id)}
-                    value={getAutoCompleteVal(id) || []}
-                    renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          variant="standard"
-                          label="Answer"
-                          placeholder="Answer"
-                        />
-                      )}
-                />}
-                {question.answerType === OPTIONAL && <Autocomplete
-                    options={question.answerVal}
-                    getOptionLabel={(option) => option.title||""}
-                    onChange={onCompleteChange(id)}
-                    value={getAutoCompleteVal(id) || {}}
-                    renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          variant="standard"
-                          label="Answer"
-                          placeholder="Answer"
-                        />
-                      )}
-                />}
+                
                 {!question._id ?
                     <div className="ques-save-container">
                         <Button variant='contained' color="primary" onClick={onSave}>Save</Button>
