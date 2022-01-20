@@ -92,13 +92,12 @@ const Questions = (props) => {
 
                 const ans = await axios.get(process.env.REACT_APP_PROXY_URL + "answer/" + (publicKey.toBase58()), config)
                 console.log("answers", ans.data)
-                if(ans.data === "") {
+                if(!ans.data.answers) {
                     setAnswers([]);
-                    setVotes([])
                 } else {
                     setAnswers(ans.data.answers.answer);
-                    setVotes(ans.data.voteList);
                 }
+                setVotes(ans.data.voteList);
                 
             } catch(e){
                 console.log(e);
