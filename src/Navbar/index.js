@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import { useHistory } from 'react-router'
 import {FaBars} from 'react-icons/fa'
-import {Nav, NavbarContainer, NavLogo, MobileIcon, NavMenu, NavItem, NavLinks, Image} from './NavbarElements'
+import {Nav, NavbarContainer, NavLogo, MobileIcon, NavMenu, NavItem, NavLinks, Image, NavLinkR} from './NavbarElements'
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faTwitter, faDiscord, faMedium} from "@fortawesome/free-brands-svg-icons"
 import '../Sidebar/icons.css'
@@ -10,14 +10,13 @@ import logo from '../Logos/logo.svg';
 import {Button, Box} from "@material-ui/core"
 import PopupDialog from "../Dialog"
 import "./styles.css"
+import { useWallet } from '@solana/wallet-adapter-react'
 
 const Navbar = ({toggle}) => {
 
     const history = useHistory();
-
     const [scrollNav, setScrollNav] = useState(false)
     const [openDialog, setOpenDialog] = useState(false)
-
     const changeNav = () => {
          if(window.scrollY >= 80) {
              setScrollNav(true)}
@@ -25,6 +24,8 @@ const Navbar = ({toggle}) => {
              setScrollNav(false)
              }
          }
+
+    const { publicKey } = useWallet()
 
     useEffect(() => {
         window.addEventListener('scroll', changeNav)
@@ -42,6 +43,13 @@ const Navbar = ({toggle}) => {
         setOpenDialog(false);
     }
 
+    const onClickQuestion = () => {
+        if(publicKey) {
+            history.push("/questions");
+        }
+        else alert("please connect your wallet");
+    }
+
     return (
         <>
             <Nav scrollNav={scrollNav}>
@@ -54,23 +62,27 @@ const Navbar = ({toggle}) => {
                     </MobileIcon>
                     <NavMenu>
                         <NavItem>
-                            <NavLinks to="about" smooth={true} duration={500} spy={true} exact='true' offset={-80}>About</NavLinks>
+                            <NavLinks to="/home/about" smooth={true} duration={500} spy={true} exact='true' offset={-80}>About</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="benefits" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Utility</NavLinks>
+                            <NavLinks to="/home/benefits" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Utility</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="roadmap" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Roadmap</NavLinks>
+                            <NavLinks to="/home/roadmap" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Roadmap</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="lore" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Lore</NavLinks>
+                            <NavLinks to="/home/lore" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Lore</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="team" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Team</NavLinks>
+                            <NavLinks to="/home/team" smooth={true} duration={500} spy={true} exact='true' offset={-80}>Team</NavLinks>
                         </NavItem>
                         <NavItem>
-                            <NavLinks to="faq" smooth={true} duration={500} spy={true} exact='true' offset={-80}>FAQ</NavLinks>
+                            <NavLinks to="/home/faq" smooth={true} duration={500} spy={true} exact='true' offset={-80}>FAQ</NavLinks>
                         </NavItem>
+                        <NavItem>
+                            <NavLinkR onClick={onClickQuestion} spy={true} exact='true' offset={-80}>Questions</NavLinkR>
+                        </NavItem>
+
                         <a href="https://twitter.com/BountyHunterNFT" className="twitter social"> 
                         <FontAwesomeIcon icon={faTwitter} size="1x" />
                         </a>
@@ -81,7 +93,7 @@ const Navbar = ({toggle}) => {
                         <FontAwesomeIcon icon={faMedium} size="1x" />
                         </a>
                         
-                        <button className="headerBtn firstBtn" onClick={goto("connectwallet")}>
+                        <button className="headerBtn firstBtn" onClick={goto("/connectwallet")}>
                             <b>My Residences</b>
                         </button>
                         <button className="headerBtn secondBtn" onClick={()=>setOpenDialog(true)}>

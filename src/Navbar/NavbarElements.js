@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import {Link as LinkR} from 'react-router-dom'
 import {Link as LinkS} from 'react-scroll'
-import {Button} from "@material-ui/core"
-import { styled as muiStyled } from '@material-ui/styles';
+// import {Button} from "@material-ui/core"
+// import { styled as muiStyled } from '@material-ui/styles';
 
 export const Nav = styled.nav`
     background: ${({scrollNav}) => (scrollNav ? '#000' : 'transparent')};
@@ -72,7 +72,25 @@ export const NavItem = styled.li`
     height: 80px;
 `;
 
-export const NavLinks = styled(LinkS)`
+export const NavLinks = styled(LinkR)`
+    color: #fff;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    padding: 0 3rem;
+    height: 100%;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Saira', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.active {
+        border-bottom: 3px solid #FFE81F;
+    }
+`;
+
+export const NavLinkR = styled('div')`
     color: #fff;
     display: flex;
     align-items: center;

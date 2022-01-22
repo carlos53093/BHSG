@@ -1,122 +1,119 @@
 import './Styles.css'
 import {
-  WalletDisconnectButton,
   WalletMultiButton,
 } from '@solana/wallet-adapter-material-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Keypair, PublicKey } from '@solana/web3.js'
-import { Program, Provider, web3 } from '@project-serum/anchor'
-import { programs } from '@metaplex/js'
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import _ from 'lodash'
 import {
   Card,
-  CardHeader,
   CardMedia,
-  CardContent,
-  Grid,
-  Typography,
 } from '@material-ui/core'
-import useConnectWallet from './LoadingMetaData'
+import useConnectWallet from '../hooks/LoadingMetaData'
+import mintList1 from "../MINT_LIST_1.json";
+// import mintList2 from "../MINT_LIST_2.json";
+// import mintList3 from "../MINT_LIST_3.json";
+import axios from 'axios'
+import { Link } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
+import { setAdmin } from '../actions/UserInfo'
 
-const programId = new PublicKey('E7XQrWFnmS2RonnqXscWR9VtcdKygwvSZnGs8CmT9uFf')
+// const config = {
+//   headers: {
+//     "Access-Control-Allow-Origin": "*",
+//     "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+//   }
+// };
 
-const addressId = new PublicKey('6ksPqG9FNsAPKK9uw7U4xw7R6pbkgRYCTiuUNWHRcVdh')
-const keyPair = Keypair.fromSeed(programId.toBytes())
+const ConnectWallet = (props) => {
 
-const connection = new web3.Connection(
-  web3.clusterApiUrl('mainnet-beta'),
-  'confirmed',
-)
-
-const GetTokenUrl = 'https://public-api.solscan.io/account/tokens'
-const GetMetaDataUrl = 'https://api.all.art/v1/solana/'
-
-const ConnectWallet = () => {
   const { publicKey } = useWallet()
-  // const [accountCnt, setAccountCnt] = useState(0);
-  const [metaplexList, setMetaplexList] = useState([])
-  const { metaData, loadMetaData } = useConnectWallet()
+  const { loadTokenAddressList , tokenInfo, loadTokenInfo, metaData, setMetaData } = useConnectWallet()
+  const [defaultTokenInfo, setDefaultTokenInfo] = useState(null)
+  const [bountyTokenList, setBountyTokenList] = useState([]);
+  const dispatch = useAppDispatch();
+
   useEffect(() => {
-    if (publicKey) loadMetaData(publicKey.toBase58())
-  }, [publicKey])
-  useEffect(()=> {
-    if (!_.find(metaplexList, { Pubkey: _.get(metaData, 'data.Pubkey', '') }) && metaData) {
-      console.log("-------------")
-      console.log(metaData)
-      const newMetaList = _.cloneDeep(metaplexList);
-      newMetaList.push(metaData.data)
-      setMetaplexList(newMetaList)
+    setMetaData(null)
+    if (publicKey) {
+      dispatch(setAdmin(false));
+      loadTokenAddressList(publicKey.toBase58())
     }
-  },[metaData])
-  // const loadMetaData = async (publicKey) => {
-  //   try {
-  //     const info = await axios.get(GetTokenUrl, {
-  //       params: { account: publicKey },
-  //     })
-  //     // setAccountCnt(info.data.length)
-  //     console.log(info.data)
-  //     let metaList = metaplexList
-  //     _.map(info.data, async (each) => {
-  //       const metadata = await axios.get(GetMetaDataUrl + each.tokenAddress)
-  //       console.log(metadata)
-  //       if (!_.find(metaList, { Pubkey: _.get(metadata, 'data.Pubkey', '') })) {
-  //         metaList.push(metadata.data)
-  //         console.log('loading')
-  //         console.log(metaList)
-  //         setMetaplexList(metaList)
-  //       }
-  //     })
-  //   } catch (err) {}
-  // }
+  }, [publicKey])
+
+  useEffect(() => {
+    (async() => {
+      let tokenAddress = [];
+      console.log(tokenInfo)
+      for(let i = 0; i < tokenInfo.length; i++) {
+        console.log("------------token array id-----", i, tokenInfo[i].tokenAddress)
+        if( mintList1.indexOf(tokenInfo[i].tokenAddress) !== -1) {
+          console.log("-------- belong to the mintList1----------", mintList1.indexOf(tokenInfo[i].tokenAddress))
+          tokenAddress.push(tokenInfo[i].tokenAddress);
+          // break;
+        }
+      }
+      console.log("++++++++++++Bounty Token List", tokenAddress)
+      if(tokenAddress.length) {
+        setBountyTokenList(tokenAddress)
+        loadTokenInfo(tokenAddress[0])
+      }
+    })()
+  }, [tokenInfo])
+
+  useEffect(()=>{
+    (async() => {
+      if(!metaData) return
+      const mapObj = {
+        '#':'',
+        ' ':'-'
+      };
+      const url = _.replace(metaData.Title, / |#/gi, function(matched){
+        return mapObj[matched];
+      });
+      const res = await axios.post(process.env.REACT_APP_PROXY_URL + "nftlist", {
+        walletAddr: publicKey.toBase58(),
+        defaultTokenAddress: metaData.Mint,
+        url: url,
+        tokenInfo: bountyTokenList
+      })
+      setDefaultTokenInfo(res.data)
+      console.log("-----metaData-----",res.data)
+      dispatch(setAdmin(res.data.isAdmin));
+    })()
+    
+  }, [metaData])
 
   const renderMetaDataContainer = () => {
-    console.log('------length-----------',metaplexList.length)
-    console.log(metaplexList)
-    return _.map(metaplexList, (each, index) => {
-      return (
-        <Grid item xs={2} sm={4} md={4} key={index} style={{marginBottom: 50}}>
-          <Card style={{ width: 350, height: 550, boxShadow:'#26b8e9 0px 0 10px 0px', borderRadius: 10 }}>
-            <CardHeader
-              title={_.get(each, 'Title', '')}
-              subheader={`Symbol: ${_.get(each, 'Properties.symbol', 'Unknow',)}`}
-            />
-            <CardMedia
+    if(!metaData || !defaultTokenInfo) return null;
+    return (
+        <div style={{position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%)'}}>
+          <Card className="card-container" style={{ font: '10px important', borderRadius: 10 }}>
+            <Link to={`room/${defaultTokenInfo.url}`}>
+              <CardMedia
               component="img"
-              height="350"
-              image={_.get(each, 'Preview_URL', '')}
+              height="250"
+              width="250"
+              image={_.get(metaData, 'Preview_URL', '')}
               alt={
-                _.get(each, 'Preview_URL', '') !== ''
+                _.get(metaData, 'Preview_URL', '') !== ''
                   ? 'Loading...'
                   : 'Unknown Image'
               }
             />
-            <CardContent>
-              <Typography variant="body2">
-                {_.get(each, 'Description', '')}
-              </Typography>
-            </CardContent>
+            </Link>
           </Card>
-        </Grid>
-      )
-    })
+        </div>
+    )
   }
 
   return (
     <div className="wallet-container">
-      <h1>My Residences</h1>
+      <h1>'My Residences'</h1>
       <br />
       <h4>A place for you to view every place you own</h4>
-      <WalletMultiButton style={{ marginTop: 70 }} />
-      <Grid
-        style={{ marginTop: 100 }}
-        container
-        columns={{ xs: 4, sm: 8, md: 12 }}
-        justifyContent="center"
-      >
+        <WalletMultiButton style={{ marginTop: 70 }} />
         {renderMetaDataContainer()}
-      </Grid>
     </div>
   )
 }
