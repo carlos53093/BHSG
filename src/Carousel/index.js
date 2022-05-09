@@ -34,7 +34,7 @@ export const HeroContainer = styled.div`
     align-items: center;
     height: 600px;
     position: relative;
-    z-index 1;
+    z-index: 1;
 
     @media screen and (max-width: 480px) {
         height: 300px;

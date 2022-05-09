@@ -7,12 +7,15 @@ import {
   CardMedia,
   CardContent,
   Typography,
+  Box
 } from '@material-ui/core'
 import useConnectWallet from '../hooks/LoadingMetaData'
 
 import mintList1 from '../MINT_LIST_1.json'
-import mintList2 from '../MINT_LIST_2.json'
-import mintList3 from '../MINT_LIST_3.json'
+// import mintList2 from '../MINT_LIST_2.json'
+// import mintList3 from '../MINT_LIST_3.json'
+import spaceList from '../SPCACESHIP_LIST.json'
+import spiderList from '../SPIDER_LIST.json'
 import axios from 'axios'
 
 import Carousel from '../Carousel2/Carousel'
@@ -32,9 +35,11 @@ const UserAssets = (props) => {
 
   const [metaplexList, setMetaplexList] = useState([])
   const [metaplexList1, setMetaplexList1] = useState([])
-  const [metaplexList2, setMetaplexList2] = useState([])
-  const [metaplexList3, setMetaplexList3] = useState([])
+  // const [metaplexList2, setMetaplexList2] = useState([])
+  // const [metaplexList3, setMetaplexList3] = useState([])
   const [metaplexListOther, setMetaplexListOther] = useState([])
+  const [spaceShip, setSpaceShip] = useState([])
+  const [spider, setSpider] = useState([])
   const { metaData, loadMetaData } = useConnectWallet()
 
   useEffect(() => {
@@ -60,7 +65,7 @@ const UserAssets = (props) => {
         const newMetaList = _.cloneDeep(metaplexList1)
         newMetaList.push(metaData.data)
         setMetaplexList1(newMetaList)
-      } else if (mintList2.indexOf(metaData.data.Mint) !== -1) {
+      } /*else if (mintList2.indexOf(metaData.data.Mint) !== -1) {
         const newMetaList = _.cloneDeep(metaplexList2)
         newMetaList.push(metaData.data)
         setMetaplexList2(newMetaList)
@@ -68,6 +73,14 @@ const UserAssets = (props) => {
         const newMetaList = _.cloneDeep(metaplexList3)
         newMetaList.push(metaData.data)
         setMetaplexList3(newMetaList)
+      } */else if (spaceList.indexOf(metaData.data.Mint) !== -1) {
+        const newMetaList = _.cloneDeep(spaceShip)
+        newMetaList.push(metaData.data)
+        setSpaceShip(newMetaList)
+      } else if (spiderList.indexOf(metaData.data.Mint) !== -1) {
+        const newMetaList = _.cloneDeep(spider)
+        newMetaList.push(metaData.data)
+        setSpider(newMetaList)
       } else {
         const newMetaList = _.cloneDeep(metaplexListOther)
         newMetaList.push(metaData.data)
@@ -81,16 +94,21 @@ const UserAssets = (props) => {
 
   const renderMetaDataContainer = (data, title) => {
     if (data.length === 0) return null
+    let len = 0;
+    _.map(data, (each) => {
+      if(!_.isEmpty(each)) len++;
+    });
     return (
-      <Carousel show={5} title={title}>
+      <Carousel show={5} title={title} length={len}>
         {_.map(data, (each, index) => {
+          if(_.isEmpty(each)) return null;
           return (
             <div key={index} style={{ margin: '10px 20px' }}>
               <Card
                 style={{
                   font: '10px important',
                   width: 250,
-                  height: 450,
+                  height: 550,
                   boxShadow: '#26b8e9 0px 0 10px 0px',
                   borderRadius: 10,
                 }}
@@ -102,6 +120,7 @@ const UserAssets = (props) => {
                     'Properties.symbol',
                     'Unknow',
                   )}`}
+                  style={{height: '100px'}}
                 />
                 <CardMedia
                   component="img"
@@ -114,12 +133,15 @@ const UserAssets = (props) => {
                   }
                 />
                 <CardContent>
-                  <Typography
-                    variant="subtitle2"
-                    style={{ textOverflow: 'ellipsis', paddingBottom: 10 }}
-                  >
-                    {_.get(each, 'Description', '')}
-                  </Typography>
+                  <Box overflow="auto" height="150px" paddingRight="10px" >
+                    <Typography
+                      variant="subtitle2"
+                      style={{ textOverflow: 'ellipsis', paddingBottom: 10 }}
+                    >
+                      {_.get(each, 'Description', '')}
+                    </Typography>
+                  </Box>
+                  
                 </CardContent>
               </Card>
             </div>
@@ -134,9 +156,9 @@ const UserAssets = (props) => {
       <h1>'My Residences'</h1>
       <br />
       <h4>A place for you to view every place you own</h4>
-      {renderMetaDataContainer(metaplexList1, 'Group1')}
-      {renderMetaDataContainer(metaplexList2, 'Group2')}
-      {renderMetaDataContainer(metaplexList3, 'Group3')}
+      {renderMetaDataContainer(spaceShip, 'SpaceShip')}
+      {renderMetaDataContainer(metaplexList1, 'Bounty Hunter')}
+      {renderMetaDataContainer(spider, 'Spider')}
       {renderMetaDataContainer(metaplexListOther, 'Other')}
     </div>
   )
