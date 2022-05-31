@@ -16,7 +16,6 @@ const useConnectWallet = () => {
         params: { account: publicKey },
       })
       // setAccountCnt(info.data.length)
-      console.log("----loadMetaData----",info.data)
       const data = _.filter(info.data, each=>{
         return each.tokenAmount.amount !== "0"
       })
@@ -24,7 +23,25 @@ const useConnectWallet = () => {
       _.map(data, async (each) => {
         const temp = await axios.get(GetMetaDataUrl + each.tokenAddress)
         setMetaData(temp)
-        console.log("LoadMetadata------",temp)
+        //   if(!_.find(metaList, {Pubkey: _.get(metadata, "data.Pubkey", "")})){
+        // metaList.push(metadata.data)
+        //   }
+      })
+    } catch (err) {}
+  }
+
+  const loadMetadataByWallet = async (publicKey) => {
+    try {
+      const info = await axios.get(GetTokenUrl, {
+        params: { account: publicKey },
+      })
+      // setAccountCnt(info.data.length)
+      const data = _.filter(info.data, each=>{
+        return each.tokenAmount.amount !== "0"
+      })
+      _.map(data, async (each) => {
+        const temp = await axios.get(GetMetaDataUrl + each.tokenAddress)
+        setMetaData(temp)
         //   if(!_.find(metaList, {Pubkey: _.get(metadata, "data.Pubkey", "")})){
         // metaList.push(metadata.data)
         //   }
@@ -38,7 +55,6 @@ const useConnectWallet = () => {
         params: { account: publicKey },
       })
       // setAccountCnt(info.data.length)
-      console.log("----loadTokenAddressList----",info.data)
       setTokenInfo(_.filter(info.data, each=>{
         return each.tokenAmount.amount !== "0"
       }))
@@ -50,13 +66,12 @@ const useConnectWallet = () => {
     for(let i = 0; i < tokenAddr.length; i++) {
       const temp = await axios.get(GetMetaDataUrl + tokenAddr[i])
       res.push(temp.data);
-      console.log("test", temp);
     }
     setMetaDataList(res);
     
   }
 
-  return { metaData,metaDataList, loadMetaData, tokenInfo, loadTokenAddressList, loadTokenInfo, setMetaData, setMetaDataList }
+  return { metaData, metaDataList, loadMetaData, tokenInfo, loadTokenAddressList, loadTokenInfo, setMetaData, setMetaDataList, loadMetadataByWallet }
 }
 
 export default useConnectWallet

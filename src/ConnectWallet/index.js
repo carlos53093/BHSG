@@ -3,7 +3,7 @@ import {
   WalletMultiButton,
 } from '@solana/wallet-adapter-material-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import _ from 'lodash'
 import {
   Card,
@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { setAdmin } from '../actions/UserInfo'
 import styled from "styled-components";
+import spaceList from '../SPIDER_LIST.json'
 // const config = {
 //   headers: {
 //     "Access-Control-Allow-Origin": "*",
@@ -32,13 +33,14 @@ const Wrapper = styled(Box)`
 `;
 
 
-const ConnectWallet = (props) => {
+const ConnectWallet = () => {
 
   const { publicKey } = useWallet()
-  const { loadTokenAddressList, tokenInfo, loadTokenInfo, metaData, setMetaData, metaDataList, setMetaDataList } = useConnectWallet()
+  const { loadTokenAddressList, tokenInfo, loadTokenInfo, metaData, setMetaData, metaDataList, setMetaDataList, loadMetaData } = useConnectWallet()
   const [defaultTokenInfo, setDefaultTokenInfo] = useState(null)
   const [bountyTokenList, setBountyTokenList] = useState([]);
   const dispatch = useAppDispatch();
+  const [spaceShip, setSpaceShip] = useState([])
 
   useEffect(() => {
     setMetaData(null)
@@ -46,22 +48,28 @@ const ConnectWallet = (props) => {
     if (publicKey) {
       dispatch(setAdmin(false));
       loadTokenAddressList(publicKey.toBase58())
+      loadMetaData(publicKey.toBase58())
     }
   }, [publicKey])
 
-  useEffect(() => {
+  useEffect(()=>{
+    if(!metaData) return;
+    if (spaceList.indexOf(metaData.data.Mint) !== -1) {
+      const newMetaList = _.cloneDeep(spaceShip)
+      newMetaList.push(metaData.data)
+      setSpaceShip(newMetaList)
+    }
+  },[metaData])
+
+  useMemo(() => {
     (async () => {
       let tokenAddress = [];
-      console.log(tokenInfo)
       for (let i = 0; i < tokenInfo.length; i++) {
-        console.log("------------token array id-----", i, tokenInfo[i].tokenAddress)
         if (mintList1.indexOf(tokenInfo[i].tokenAddress) !== -1) {
-          console.log("-------- belong to the mintList1----------", mintList1.indexOf(tokenInfo[i].tokenAddress))
           tokenAddress.push(tokenInfo[i].tokenAddress);
           // break;
         }
       }
-      console.log("++++++++++++Bounty Token List", tokenAddress)
       if (tokenAddress.length) {
         setBountyTokenList(tokenAddress)
         loadTokenInfo(tokenAddress)
@@ -69,7 +77,7 @@ const ConnectWallet = (props) => {
     })()
   }, [tokenInfo])
 
-  useEffect(() => {
+  useMemo(() => {
     (async () => {
       if (!metaDataList || !metaDataList.length) return
       // const mapObj = {
@@ -90,23 +98,28 @@ const ConnectWallet = (props) => {
         tokenInfo: bountyTokenList
       })
       setDefaultTokenInfo(res.data)
-      console.log("-----metaData-----", res.data)
-      dispatch(setAdmin(res.data.isAdmin));
     })()
 
   }, [metaDataList])
 
   const renderMetaDataContainer = () => {
     if (!metaDataList || !defaultTokenInfo) return null;
-    console.log("kkkkkkkkkkkkkk", bountyTokenList)
     return (
       <Box style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%)' }} display="flex">
         <Wrapper>
           <Box display="flex" width="fit-content">
             {
               _.map(metaDataList, (each, key) => {
+                // const title = _.replace(each.Title, " ", "_");
+                const mapObj = {
+                  '#':'',
+                  ' ':'-'
+                };
+                const title = _.replace(each.Title, / |#/gi, function(matched){
+                  return mapObj[matched];
+                });
                 return <Card className="card-container" style={{ font: '10px important', borderRadius: 10, marginRight: '30px' }}>
-                  <Link to={`room/${defaultTokenInfo.url}`}>
+                  <Link to={`room/${title}`}>
                     <CardMedia
                       component="img"
                       style={{width:'250px', height: '250px'}}
