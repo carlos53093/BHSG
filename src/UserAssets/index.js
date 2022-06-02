@@ -224,19 +224,25 @@ const UserAssets = (props) => {
               return mapObj[matched];
             });
             if(title === params.url ) {
-              return <Card className="card-view-container" style={{ font: '10px important', borderRadius: 10, }}>
-                  <CardMedia
-                    component="img"
-                    style={{width:'250px', height: '250px'}}
-                    key={key}
-                    image={_.get(each, 'Preview_URL', '')}
-                    alt={
-                      _.get(each, 'Preview_URL', '') !== ''
-                        ? 'Loading...'
-                        : 'Unknown Image'
-                    }
-                  />
-              </Card>
+              
+              return (
+                <div style={{ textAlign: 'center'}}>
+                  <h3>{title}</h3>
+                  <Card className="card-view-container" style={{ font: '10px important', borderRadius: 10, }}>
+                      <CardMedia
+                        component="img"
+                        style={{width:'250px', height: '250px'}}
+                        key={key}
+                        image={_.get(each, 'Preview_URL', '')}
+                        alt={
+                          _.get(each, 'Preview_URL', '') !== ''
+                            ? 'Loading...'
+                            : 'Unknown Image'
+                        }
+                      />
+                  </Card>
+                </div>
+              )
             }
           })
         }
