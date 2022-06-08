@@ -1,6 +1,6 @@
 import "./App.css";
 import { useMemo, useState } from "react";
-import {Route, BrowserRouter as Router, Switch} from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 // import * as anchor from "@project-serum/anchor";
 import { clusterApiUrl } from "@solana/web3.js";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
@@ -22,7 +22,8 @@ import { createTheme, ThemeProvider } from "@material-ui/core";
 import Navbar from "./Navbar";
 import Appbar from "./Appbar";
 import ConnectWallet from "./ConnectWallet";
-import UserAssets from "./UserAssets"
+import UserAssets from "./UserAssets";
+import Demo from "./Demo";
 
 // const treasury = new anchor.web3.PublicKey(
 //   process.env.REACT_APP_TREASURY_ADDRESS!
@@ -46,28 +47,40 @@ const network = process.env.REACT_APP_SOLANA_NETWORK as WalletAdapterNetwork;
 // const txTimeout = 30000; // milliseconds (confirm this works for your project)
 
 const theme = createTheme({
-    palette: {
-        type: 'dark',
+  palette: {
+    type: "dark",
+    primary: {
+      main: "#48FFF4",
     },
-    overrides: {
-        MuiButtonBase: {
-            root: {
-                justifyContent: 'flex-start',
-            },
-        },
-        MuiButton: {
-            root: {
-                textTransform: undefined,
-                padding: '12px 16px',
-            },
-            startIcon: {
-                marginRight: 8,
-            },
-            endIcon: {
-                marginLeft: 8,
-            },
-        },
+  },
+  overrides: {
+    MuiButtonBase: {
+      root: {
+        justifyContent: "flex-start",
+      },
     },
+    MuiButton: {
+      root: {
+        textTransform: undefined,
+        padding: "12px 16px",
+      },
+      startIcon: {
+        marginRight: 8,
+      },
+      endIcon: {
+        marginLeft: 8,
+      },
+    },
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1560,
+    },
+  },
 });
 
 const App = () => {
@@ -75,11 +88,11 @@ const App = () => {
 
   const wallets = useMemo(
     () => [
-        getPhantomWallet(),
-        getSlopeWallet(),
-        getSolflareWallet(),
-        getSolletWallet({ network }),
-        getSolletExtensionWallet({ network })
+      getPhantomWallet(),
+      getSlopeWallet(),
+      getSolflareWallet(),
+      getSolletWallet({ network }),
+      getSolletExtensionWallet({ network }),
     ],
     [network]
   );
@@ -87,28 +100,34 @@ const App = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = () => {
-      setIsOpen(!isOpen);
+    setIsOpen(!isOpen);
   };
 
   return (
     <Router>
-
-    <div style={{background:"black"}}>
-      <ThemeProvider theme={theme}>
-        <ConnectionProvider endpoint={endpoint}>
-          <WalletProvider wallets={wallets} autoConnect={true}>
-            <WalletDialogProvider>
-              <Appbar />  
+      <div style={{ background: "black" }}>
+        <ThemeProvider theme={theme}>
+          <ConnectionProvider endpoint={endpoint}>
+            <WalletProvider wallets={wallets} autoConnect={true}>
+              <WalletDialogProvider>
+                {/* <Appbar /> */}
                 <Switch>
                   <Route path="/" exact component={ConnectWallet} />
-                  <Route path="/room/:url" render={(props) => <UserAssets {...props} />} />
+                  <Route
+                    path="/demo/:url"
+                    render={(props) => <Demo {...props} />}
+                  />
+                  <Route
+                    path="/room/:url"
+                    render={(props) => <UserAssets {...props} />}
+                  />
                 </Switch>
-            </WalletDialogProvider>
-          </WalletProvider>
-        </ConnectionProvider>
-      </ThemeProvider>
+              </WalletDialogProvider>
+            </WalletProvider>
+          </ConnectionProvider>
+        </ThemeProvider>
       </div>
-  </Router>
+    </Router>
   );
 };
 

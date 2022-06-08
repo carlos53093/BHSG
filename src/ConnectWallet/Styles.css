@@ -1,12 +1,12 @@
-.wallet-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: column;
-    min-height: calc(100vh - 80px - 100px);
-    margin-top: 100px;
-}
-
+/* .wallet-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  min-height: calc(100vh - 80px - 100px);
+  margin-top: 100px;
+} */
+/*
 .card-container {
     transform: scale(1);
     box-shadow: #26b8e9 0px 0 10px 0px !important;
@@ -28,4 +28,4 @@
 .card-view-container:hover {
     box-shadow: #26b8e9 0px 0 20px 2px !important;
     transition: all 0.3s ease-out;
-}
+} */

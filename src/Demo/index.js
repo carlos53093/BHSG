@@ -170,10 +170,8 @@ const Wrapper = styled(Box)`
     font-family: Saira;
     color: #8fbac8;
     text-decoration: underline;
-    margin-bottom: 30px;
   }
   & .tabs-bar {
-    margin-bottom: 30px;
     box-shadow: none;
     & .MuiTab-root.MuiTab-textColorPrimary {
       font-family: Saira;
@@ -224,11 +222,12 @@ const Wrapper = styled(Box)`
   }
   & .tab-panel-main {
     & > div {
-      padding: 0;
+      padding-left: 0;
+      padding-right: 0;
     }
   }
   & .grid-container {
-    width: calc(100% + 8px);
+    margin: -16px;
     & .image-container {
       object-fit: cover;
       height: 250px;
@@ -243,8 +242,7 @@ const Wrapper = styled(Box)`
 
 const ConnectWallet = (props) => {
   const [value, setValue] = React.useState(0);
-  const [offsetTop, setOffsetTop] = React.useState(0);
-  const ref = React.useRef(null);
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -252,7 +250,6 @@ const ConnectWallet = (props) => {
   const handleChangeIndex = (index) => {
     setValue(index);
   };
-
   const {
     match: { params },
   } = props;
@@ -319,7 +316,13 @@ const ConnectWallet = (props) => {
   useMemo(() => {
     (async () => {
       if (!metaDataList || !metaDataList.length) return;
-
+      // const mapObj = {
+      //   '#':'',
+      //   ' ':'-'
+      // };
+      // const url = _.replace(metaData.Title, / |#/gi, function(matched){
+      //   return mapObj[matched];
+      // });
       const _defaultAddress = [];
       _.map(metaDataList, (each) => {
         _defaultAddress.push(each.Mint);
@@ -336,11 +339,7 @@ const ConnectWallet = (props) => {
       setDefaultTokenInfo(res.data);
     })();
   }, [metaDataList]);
-  React.useEffect(() => {
-    if (ref.current) {
-      setOffsetTop(ref.current.offsetTop);
-    }
-  }, []);
+
   useEffect(() => {
     if (
       !_.find(metaplexList, { Pubkey: _.get(metaData, "data.Pubkey", "") }) &&
@@ -375,47 +374,79 @@ const ConnectWallet = (props) => {
       if (!_.isEmpty(each)) len++;
     });
     return (
-      <Box
-        style={{
-          height: `calc(100vh - ${offsetTop + 120}px)`,
-          overflow: "auto",
-        }}
-      >
-        <Grid container spacing={2} className="grid-container">
-          {_.map(data, (each, index) => {
-            if (_.isEmpty(each)) return null;
-            const mapObj = {
-              "#": "",
-              " ": "-",
-            };
-            const title = _.replace(each.Title, / |#/gi, function (matched) {
-              return mapObj[matched];
-            });
-            return (
-              <Grid key={index} item xl={3} lg={3}>
-                <Link
-                  to={isLink ? `/room/${title}` : "#"}
-                  style={{ textDecoration: "none" }}
-                  component={RouterLink}
+      <Grid container spacing={2} className="grid-container">
+        {_.map(data, (each, index) => {
+          if (_.isEmpty(each)) return null;
+          const mapObj = {
+            "#": "",
+            " ": "-",
+          };
+          const title = _.replace(each.Title, / |#/gi, function (matched) {
+            return mapObj[matched];
+          });
+          return (
+            <Grid key={index} item xl={3} lg={3}>
+              <Link
+                to={isLink ? `/room/${title}` : "#"}
+                style={{ textDecoration: "none" }}
+                component={RouterLink}
+              >
+                <Box
+                  component="img"
+                  src={_.get(each, "Preview_URL", "")}
+                  alt={
+                    _.get(each, "Preview_URL", "") !== ""
+                      ? "Loading..."
+                      : "Unknown Image"
+                  }
+                  width="100%"
+                  height={250}
+                  className="image-container"
+                />
+                {/* <Card
+                  style={{
+                    font: "10px important",
+                    width: 250,
+                    height: 550,
+                    boxShadow: "#26b8e9 0px 0 10px 0px",
+                    borderRadius: 10,
+                  }}
                 >
-                  <Box
+                  <CardHeader
+                    title={_.get(each, "Title", "")}
+                    subheader={`Symbol: ${_.get(
+                      each,
+                      "Properties.symbol",
+                      "Unknow"
+                    )}`}
+                    style={{ height: "100px" }}
+                  />
+                  <CardMedia
                     component="img"
-                    src={_.get(each, "Preview_URL", "")}
+                    height="250"
+                    image={_.get(each, "Preview_URL", "")}
                     alt={
                       _.get(each, "Preview_URL", "") !== ""
                         ? "Loading..."
                         : "Unknown Image"
                     }
-                    width="100%"
-                    height={250}
-                    className="image-container"
                   />
-                </Link>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </Box>
+                  <CardContent>
+                    <Box overflow="auto" height="150px" paddingRight="10px">
+                      <Typography
+                        variant="subtitle2"
+                        style={{ textOverflow: "ellipsis", paddingBottom: 10 }}
+                      >
+                        {_.get(each, "Description", "")}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card> */}
+              </Link>
+            </Grid>
+          );
+        })}
+      </Grid>
     );
   };
   return (
