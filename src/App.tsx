@@ -23,7 +23,6 @@ import Navbar from "./Navbar";
 import Appbar from "./Appbar";
 import ConnectWallet from "./ConnectWallet";
 import UserAssets from "./UserAssets";
-import Demo from "./Demo";
 
 // const treasury = new anchor.web3.PublicKey(
 //   process.env.REACT_APP_TREASURY_ADDRESS!
@@ -113,10 +112,6 @@ const App = () => {
                 {/* <Appbar /> */}
                 <Switch>
                   <Route path="/" exact component={ConnectWallet} />
-                  <Route
-                    path="/demo/:url"
-                    render={(props) => <Demo {...props} />}
-                  />
                   <Route
                     path="/room/:url"
                     render={(props) => <UserAssets {...props} />}
