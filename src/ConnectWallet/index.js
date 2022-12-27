@@ -1,6 +1,6 @@
 // import "./Styles.css";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import _ from "lodash";
 import { Card, CardMedia, Box, Grid, Typography } from "@material-ui/core";
 import useConnectWallet from "../hooks/LoadingMetaData";
@@ -124,32 +124,48 @@ const ConnectWallet = () => {
     })();
   }, [tokenInfo]);
 
-  useMemo(() => {
-    (async () => {
-      if (!metaDataList || !metaDataList.length) return;
-      // const mapObj = {
-      //   '#':'',
-      //   ' ':'-'
-      // };
-      // const url = _.replace(metaData.Title, / |#/gi, function(matched){
-      //   return mapObj[matched];
-      // });
-      const _defaultAddress = [];
-      _.map(metaDataList, (each) => {
-        _defaultAddress.push(each.Mint);
+  const saveAssets = async () => {
+    if (!metaDataList || !metaDataList.length) return;
+    console.log(metaDataList)
+ 
+    const _defaultAddress = [];
+    _.map(metaDataList, (each) => {
+      _defaultAddress.push(each.Mint);
+    });
+    const res = await axios.post(
+      process.env.REACT_APP_PROXY_URL + "nftlist",
+      {
+        walletAddr: publicKey.toBase58(),
+        defaultTokenAddress: _defaultAddress,
+        tokenInfo: bountyTokenList,
+      }
+    );
+    setDefaultTokenInfo(res.data);
+
+    const mapObj = {
+      '#':'',
+      ' ':'-'
+    };
+    const url = [];
+    for (let i = 0; i < metaDataList.length; i++) {
+      const _url = _.replace(metaDataList[i].Title, / |#/gi, function(matched){
+        return mapObj[matched];
       });
-      const res = await axios.post(
-        process.env.REACT_APP_PROXY_URL + "nftlist",
-        {
-          walletAddr: publicKey.toBase58(),
-          defaultTokenAddress: _defaultAddress,
-          // url: url,
-          tokenInfo: bountyTokenList,
-        }
-      );
-      setDefaultTokenInfo(res.data);
-    })();
-  }, [metaDataList]);
+      url.push(_url);
+    }
+    await axios.post(
+      process.env.REACT_APP_PROXY_URL + "url",
+      {
+        walletAddr: publicKey.toBase58(),
+        url: url,
+      }
+    );
+    
+  }
+
+  useEffect(() => {saveAssets()}, [metaDataList?.length]);
+
+
 
   const RenderMetaDataContainer = () => {
     const ref = useRef(null);

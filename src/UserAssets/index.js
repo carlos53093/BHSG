@@ -278,9 +278,12 @@ const ConnectWallet = (props) => {
   const [bountyTokenList, setBountyTokenList] = useState([]);
   const [defaultTokenInfo, setDefaultTokenInfo] = useState(null);
 
+  console.log(url);
+
   useMemo(() => {
     if (defaultTokenInfo === null) return;
     (async () => {
+      console.log("==========================",defaultTokenInfo.url)
       try {
         const res = await axios.get(
           process.env.REACT_APP_PROXY_URL + "nftlist/" + defaultTokenInfo.url,
@@ -294,10 +297,24 @@ const ConnectWallet = (props) => {
   }, [defaultTokenInfo]);
 
   useEffect(() => {
-    if (!publicKey) return;
-    if (publicKey) {
-      loadMetadataByWallet(publicKey.toBase58());
-    }
+    // if (!publicKey) return;
+    // if (publicKey) {
+    //   loadMetadataByWallet(publicKey.toBase58());
+    // }
+
+    (async () => {
+      console.log("==========================",url)
+      try {
+        const res = await axios.get(
+          process.env.REACT_APP_PROXY_URL + "url/" + url,
+          config
+        );
+        console.log("=======",res.data);
+        loadMetadataByWallet(res.data.address);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
   }, []);
 
   useMemo(() => {
@@ -324,12 +341,13 @@ const ConnectWallet = (props) => {
       _.map(metaDataList, (each) => {
         _defaultAddress.push(each.Mint);
       });
+      console.log("++++++++++++++++++++",defaultTokenInfo)
       const res = await axios.post(
         process.env.REACT_APP_PROXY_URL + "nftlist",
         {
           walletAddr: publicKey.toBase58(),
           defaultTokenAddress: _defaultAddress,
-          // url: defaultTokenInfo.url,
+          url: defaultTokenInfo.url,
           tokenInfo: bountyTokenList,
         }
       );
